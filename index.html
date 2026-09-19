@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Anime Matrix Engine</title>
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -16,11 +16,11 @@
         extend: {
           colors: {
             brand: {
-              blue: '#00F0FF',       // ฟ้าไซเบอร์
-              darkBlue: '#0B1528',   // สีกรมเข้มพื้นหลัง
-              cardBlue: '#132238',   // สีกรมการ์ด
-              orange: '#FF8A00',     // ส้มขั้วตรงข้าม
-              neonOrange: '#FF5400'  // ส้มสดใส
+              blue: '#00F0FF',
+              darkBlue: '#0B1528',
+              cardBlue: '#132238',
+              orange: '#FF8A00',
+              neonOrange: '#FF5400'
             }
           }
         }
@@ -28,7 +28,6 @@
     }
   </script>
   <style>
-    /* Custom Slider Style สำหรับจอมือถือ */
     input[type=range]::-webkit-slider-thumb {
       background: #FF8A00;
       border: 3px solid #00F0FF;
@@ -41,7 +40,7 @@
 </head>
 <body class="bg-brand-darkBlue text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-brand-blue selection:text-black">
 
-  <!-- Top Navigation (Mobile Friendly) -->
+  <!-- Top Navigation -->
   <nav class="sticky top-0 z-50 bg-[#0B1528]/95 backdrop-blur border-b border-brand-blue/30 px-4 py-3 flex justify-between items-center shadow-lg">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-orange to-brand-blue flex items-center justify-center font-black text-black text-lg">
@@ -60,7 +59,7 @@
   <!-- Main Container -->
   <main class="w-full max-w-lg mx-auto p-4 flex-grow flex flex-col justify-center">
     
-    <!-- User Input Card -->
+    <!-- Rating Form Card -->
     <div class="bg-brand-cardBlue border border-brand-blue/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-brand-orange/15 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -70,23 +69,20 @@
       </div>
 
       <form id="ratingForm" onsubmit="submitData(event)" class="space-y-4 text-left">
-        <!-- User Name -->
         <div>
           <label class="block text-xs font-bold text-brand-blue mb-1">👤 บัญชีผู้ใช้ / ชื่อของคุณ:</label>
           <input type="text" id="username" required placeholder="เช่น Thanadun_P" 
             class="w-full text-base px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white placeholder-slate-600 transition" />
         </div>
 
-        <!-- Anime Name Selection -->
         <div>
           <label class="block text-xs font-bold text-brand-blue mb-1">🎬 เลือกเรื่องอนิเมะ:</label>
           <select id="animeSelect" onchange="onAnimeSelected()" required 
             class="w-full text-base px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white cursor-pointer transition">
-            <option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง --</option>
+            <option value="" disabled selected>⏳ กำลังโหลดข้อมูล...</option>
           </select>
         </div>
 
-        <!-- Dynamic Genre & Year -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-medium text-slate-400 mb-1">🏷️ หมวดหมู่:</label>
@@ -100,7 +96,6 @@
           </div>
         </div>
 
-        <!-- Rating Slider -->
         <div class="pt-2 bg-[#080E1A]/40 p-3 rounded-2xl border border-slate-800/80">
           <div class="flex justify-between items-center mb-2">
             <span class="text-xs font-bold text-brand-blue">⭐ คะแนนที่คุณให้:</span>
@@ -111,14 +106,13 @@
             class="w-full h-2 bg-slate-700 rounded-lg cursor-pointer" />
         </div>
 
-        <!-- Submit Button -->
         <button type="submit" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-brand-orange to-brand-neonOrange active:scale-95 text-black font-black text-sm rounded-xl transition-all shadow-lg shadow-brand-orange/20">
           🔥 บันทึกลง Cloud Database
         </button>
       </form>
     </div>
 
-    <!-- Admin Panel / Collaborative Filtering View -->
+    <!-- Admin Panel -->
     <div id="adminModal" class="hidden mt-6 bg-brand-cardBlue border-2 border-brand-orange rounded-3xl p-5 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-3">
         <div>
@@ -131,7 +125,7 @@
       <div class="mb-3">
         <span class="text-xs text-slate-300 font-semibold block mb-1.5">กดเลือก User จากฐานข้อมูล:</span>
         <div id="userBadges" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
-          <span class="text-xs text-slate-500">กำลังโหลด User...</span>
+          <span class="text-xs text-slate-500">กำลังโหลด...</span>
         </div>
       </div>
 
@@ -145,54 +139,43 @@
     Mobile Recommendation Matrix • Blue & Orange
   </footer>
 
-<script>
+  <script>
+    // ตั้งชื่อ dbClient เพื่อป้องกันการชนกับ library อื่น
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
-    
-    // สร้าง client แบบครอบคลุม
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let animeMasterList = [];
 
-    // เรียกทำงานทันที
-    fetchAnimeData();
+    // เรียกดึงข้อมูลทันที
+    fetchAnimeList();
 
-    async function fetchAnimeData() {
+    async function fetchAnimeList() {
       const select = document.getElementById("animeSelect");
-      select.innerHTML = '<option value="" disabled selected>⏳ กำลังโหลดข้อมูล...</option>';
-
       try {
-        const res = await supabase.from('animes').select('*');
-        
-        console.log("Supabase Response:", res);
+        const { data, error } = await dbClient
+          .from('animes')
+          .select('title, genre, release_year')
+          .order('title', { ascending: true });
 
-        if (res.error) {
-          select.innerHTML = `<option value="" disabled selected>❌ Error: ${res.error.message}</option>`;
-          alert("Supabase Error: " + res.error.message);
-          return;
-        }
+        if (error) throw error;
 
-        animeMasterList = res.data || [];
-
+        animeMasterList = data || [];
         if (animeMasterList.length === 0) {
-          select.innerHTML = '<option value="" disabled selected>⚠️ ตาราง animes ว่างเปล่า (ไม่มีแถวข้อมูล)</option>';
-          alert("ดึงข้อมูลได้สำเร็จ แต่ในตาราง animes ไม่มีข้อมูลเลย (0 rows)");
+          select.innerHTML = '<option value="" disabled selected>⚠️ ไม่พบข้อมูลในตาราง animes</option>';
           return;
         }
 
-        // แสดงผลเข้า Dropdown
         select.innerHTML = '<option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง --</option>';
-        animeMasterList.forEach(anime => {
+        animeMasterList.forEach(a => {
           const opt = document.createElement("option");
-          opt.value = anime.title;
-          opt.innerText = `${anime.title} (${anime.release_year})`;
+          opt.value = a.title;
+          opt.innerText = `${a.title} (${a.release_year})`;
           select.appendChild(opt);
         });
-
       } catch (err) {
         console.error(err);
-        select.innerHTML = `<option value="" disabled selected>❌ JS Error: ${err.message}</option>`;
-        alert("JS Exception: " + err.message);
+        select.innerHTML = `<option value="" disabled selected>❌ โหลดไม่สำเร็จ: ${err.message}</option>`;
       }
     }
 
@@ -218,7 +201,7 @@
       submitBtn.innerText = "กำลังบันทึก...";
 
       try {
-        const { error } = await supabase.from('anime_ratings').insert([
+        const { error } = await dbClient.from('anime_ratings').insert([
           { username: user, anime_name: anime, genre, release_year: year, rating }
         ]);
         if (error) throw error;
@@ -226,7 +209,7 @@
         Swal.fire({
           icon: 'success',
           title: 'บันทึกสำเร็จ!',
-          text: `บันทึกคะแนนเรื่อง ${anime} แล้ว`,
+          text: `บันทึกเรื่อง ${anime} แล้ว`,
           background: '#132238',
           color: '#ffffff',
           confirmButtonColor: '#FF8A00'
@@ -259,12 +242,13 @@
     }
 
     async function getAllRatings() {
-      const { data, error } = await supabase.from('anime_ratings').select('*');
+      const { data, error } = await dbClient.from('anime_ratings').select('*');
       return data || [];
     }
 
     async function fetchAndRenderUsers() {
       const container = document.getElementById("userBadges");
+      container.innerHTML = `<span class="text-xs text-slate-500">กำลังโหลด...</span>`;
       const ratings = await getAllRatings();
       const users = [...new Set(ratings.map(r => r.username))];
 
