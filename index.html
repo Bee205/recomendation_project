@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Anime Matrix Engine</title>
-  <!-- Tailwind CSS CDN -->
+  <!-- ป้องกัน Favicon 404 ด้วย Inline SVG Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -28,13 +29,18 @@
     }
   </script>
   <style>
-    input[type=range]::-webkit-slider-thumb {
-      background: #FF8A00;
-      border: 3px solid #00F0FF;
-      height: 28px;
-      width: 28px;
-      border-radius: 50%;
-      cursor: pointer;
+    .star-btn {
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease-in-out;
+    }
+    .star-btn:hover, .star-btn:active {
+      transform: scale(1.35) rotate(5deg);
+    }
+    .star-active {
+      color: #FF8A00;
+      filter: drop-shadow(0 0 6px rgba(255, 138, 0, 0.7));
+    }
+    .star-inactive {
+      color: #334155;
     }
   </style>
 </head>
@@ -51,21 +57,27 @@
         <span class="text-[10px] text-slate-400">ระบบเก็บ Rating ประมวลผล</span>
       </div>
     </div>
-    <button onclick="toggleAdminPanel()" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-black active:scale-95 transition">
-      🔑 แอดมิน
-    </button>
+    
+    <div class="flex gap-2">
+      <button onclick="openUserRecommendationModal()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-black active:scale-95 transition">
+        💡 คำแนะนำสำหรับฉัน
+      </button>
+      <button onclick="promptAdminLogin()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-black active:scale-95 transition">
+        🔑 แอดมิน
+      </button>
+    </div>
   </nav>
 
   <!-- Main Container -->
   <main class="w-full max-w-lg mx-auto p-4 flex-grow flex flex-col justify-center">
     
-    <!-- Rating Form Card -->
-    <div class="bg-brand-cardBlue border border-brand-blue/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+    <!-- User Input Card -->
+    <div id="formSection" class="bg-brand-cardBlue border border-brand-blue/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
       <div class="absolute -top-16 -right-16 w-36 h-36 bg-brand-orange/15 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div class="mb-5 text-center">
+      <div class="mb-4 text-center">
         <h2 class="text-xl font-black text-brand-orange tracking-tight">📝 บันทึกข้อมูลคะแนน</h2>
-        <p class="text-xs text-slate-400 mt-0.5">ระบบจะนำข้อมูลเข้าสู่ Database เพื่อคำนวณสูตรหาความชอบ</p>
+        <p class="text-xs text-slate-400 mt-0.5">ให้คะแนนอนิเมะเพื่อนำไปประมวลผลความชอบ</p>
       </div>
 
       <form id="ratingForm" onsubmit="submitData(event)" class="space-y-4 text-left">
@@ -96,43 +108,70 @@
           </div>
         </div>
 
-        <div class="pt-2 bg-[#080E1A]/40 p-3 rounded-2xl border border-slate-800/80">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-bold text-brand-blue">⭐ คะแนนที่คุณให้:</span>
-            <span id="scoreText" class="text-xl font-black text-brand-orange">8.0 <span class="text-xs text-slate-400">/ 10</span></span>
+        <!-- 5-Star Interactive Rating -->
+        <div class="pt-2 bg-[#080E1A]/40 p-4 rounded-2xl border border-slate-800/80 text-center">
+          <div class="flex justify-between items-center mb-2 px-1">
+            <span class="text-xs font-bold text-brand-blue">⭐ ระดับความชอบ:</span>
+            <span id="starScoreLabel" class="text-sm font-black text-brand-orange">5 / 5 ดาว</span>
           </div>
-          <input type="range" id="rating" min="1" max="10" step="0.5" value="8.0" 
-            oninput="document.getElementById('scoreText').innerHTML = parseFloat(this.value).toFixed(1) + ' <span class=\'text-xs text-slate-400\'>/ 10</span>'"
-            class="w-full h-2 bg-slate-700 rounded-lg cursor-pointer" />
+          
+          <div class="flex justify-center gap-3 my-1">
+            <button type="button" onclick="setRating(1)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setRating(2)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setRating(3)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setRating(4)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setRating(5)" class="star-btn text-3xl star-active">★</button>
+          </div>
         </div>
 
         <button type="submit" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-brand-orange to-brand-neonOrange active:scale-95 text-black font-black text-sm rounded-xl transition-all shadow-lg shadow-brand-orange/20">
-          🔥 บันทึกลง Cloud Database
+          🔥 บันทึกคะแนนลง Cloud
         </button>
       </form>
     </div>
 
-    <!-- Admin Panel -->
-    <div id="adminModal" class="hidden mt-6 bg-brand-cardBlue border-2 border-brand-orange rounded-3xl p-5 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-3">
+    <!-- Admin Dashboard Section -->
+    <div id="adminDashboard" class="hidden bg-brand-cardBlue border-2 border-brand-orange rounded-3xl p-5 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <div>
-          <h3 class="text-sm font-black text-brand-orange">⚙️ แผงประมวลผล Admin</h3>
-          <p class="text-[10px] text-slate-400">คำนวณ r̄ และ Cosine Similarity sim(u, v)</p>
+          <h3 class="text-sm font-black text-brand-orange">📊 Admin Dashboard</h3>
+          <p class="text-[10px] text-slate-400">สถิติระบบและผลการคำนวณ Collaborative Filtering</p>
         </div>
-        <button onclick="toggleAdminPanel()" class="text-slate-400 text-sm hover:text-white px-2 py-0.5 rounded bg-slate-800">✕</button>
+        <button onclick="closeAdminDashboard()" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">
+          ✕ ปิด
+        </button>
       </div>
 
-      <div class="mb-3">
-        <span class="text-xs text-slate-300 font-semibold block mb-1.5">กดเลือก User จากฐานข้อมูล:</span>
-        <div id="userBadges" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-[#080E1A] p-2.5 rounded-xl border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">ตอบวันนี้</span>
+          <span id="statToday" class="text-base font-black text-green-400">0</span>
+        </div>
+        <div class="bg-[#080E1A] p-2.5 rounded-xl border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">ผู้ใช้ทั้งหมด</span>
+          <span id="statUsers" class="text-base font-black text-brand-blue">0</span>
+        </div>
+        <div class="bg-[#080E1A] p-2.5 rounded-xl border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">คะแนนทั้งหมด</span>
+          <span id="statRatings" class="text-base font-black text-brand-orange">0</span>
+        </div>
+      </div>
+
+      <!-- User List -->
+      <div>
+        <span class="text-xs text-slate-300 font-semibold block mb-1.5">เลือก User เพื่อดูประวัติและผลลัพธ์:</span>
+        <div id="adminUserBadges" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
           <span class="text-xs text-slate-500">กำลังโหลด...</span>
         </div>
       </div>
 
-      <div id="computationResult" class="bg-[#080E1A] p-3 rounded-xl border border-slate-800 text-xs">
-        แตะที่ชื่อผู้ใช้ด้านบนเพื่อเริ่มประมวลผลเปรียบเทียบ...
+      <!-- User Detailed Analytics View -->
+      <div id="adminUserDetail" class="bg-[#080E1A] p-3.5 rounded-2xl border border-slate-800 text-xs">
+        คลิกเลือกผู้ใช้ด้านบนเพื่อตรวจสอบรายละเอียด
       </div>
     </div>
+
   </main>
 
   <footer class="py-3 text-center text-[11px] text-slate-500 border-t border-slate-800">
@@ -142,13 +181,30 @@
   <script>
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
-    
-    // ใช้ชื่อ db แทน ห้ามตั้งชื่อ supabase เด็ดขาด
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    const ADMIN_PASSWORD = "admin1234"; // รหัสผ่านแอดมิน (เปลี่ยนตามต้องการ)
+
     let animeMasterList = [];
+    let currentRating = 5;
 
     fetchAnimeList();
+
+    // จัดการระบบเลือก 5 ดาว
+    function setRating(rating) {
+      currentRating = rating;
+      document.getElementById("starScoreLabel").innerText = `${rating} / 5 ดาว`;
+      const buttons = document.querySelectorAll(".star-btn");
+      buttons.forEach((btn, idx) => {
+        if (idx < rating) {
+          btn.classList.add("star-active");
+          btn.classList.remove("star-inactive");
+        } else {
+          btn.classList.remove("star-active");
+          btn.classList.add("star-inactive");
+        }
+      });
+    }
 
     async function fetchAnimeList() {
       const select = document.getElementById("animeSelect");
@@ -188,13 +244,13 @@
       }
     }
 
+    // บันทึกข้อมูล
     async function submitData(e) {
       e.preventDefault();
       const user = document.getElementById("username").value.trim();
       const anime = document.getElementById("animeSelect").value;
       const genre = document.getElementById("genre").value;
       const year = parseInt(document.getElementById("year").value);
-      const rating = parseFloat(document.getElementById("rating").value);
 
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
@@ -202,14 +258,15 @@
 
       try {
         const { error } = await db.from('anime_ratings').insert([
-          { username: user, anime_name: anime, genre, release_year: year, rating }
+          { username: user, anime_name: anime, genre, release_year: year, rating: currentRating }
         ]);
         if (error) throw error;
 
         Swal.fire({
           icon: 'success',
           title: 'บันทึกสำเร็จ!',
-          text: `บันทึกเรื่อง ${anime} แล้ว`,
+          html: `<p class="text-sm">บันทึก <b>${anime}</b> สำหรับคุณแล้ว</p>
+                 <p class="text-brand-orange font-bold mt-1">${'★'.repeat(currentRating)} (${currentRating}/5 ดาว)</p>`,
           background: '#132238',
           color: '#ffffff',
           confirmButtonColor: '#FF8A00'
@@ -218,6 +275,7 @@
         document.getElementById("animeSelect").selectedIndex = 0;
         document.getElementById("genre").value = "";
         document.getElementById("year").value = "";
+        setRating(5);
       } catch (err) {
         Swal.fire({
           icon: 'error',
@@ -229,47 +287,83 @@
         });
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "🔥 บันทึกลง Cloud Database";
+        submitBtn.innerText = "🔥 บันทึกคะแนนลง Cloud";
       }
     }
 
-    async function toggleAdminPanel() {
-      const modal = document.getElementById("adminModal");
-      modal.classList.toggle("hidden");
-      if (!modal.classList.contains("hidden")) {
-        await fetchAndRenderUsers();
+    // ระบบ Login ของ Admin พร้อมรหัสผ่าน
+    async function promptAdminLogin() {
+      const { value: password } = await Swal.fire({
+        title: 'ระบบจัดการผู้ดูแล (Admin)',
+        input: 'password',
+        inputLabel: 'กรุณากรอกรหัสผ่าน Admin',
+        inputPlaceholder: 'ใส่รหัสผ่าน...',
+        showCancelButton: true,
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonText: 'เข้าสู่ระบบ',
+        confirmButtonColor: '#FF8A00',
+        cancelButtonColor: '#334155',
+        background: '#132238',
+        color: '#ffffff'
+      });
+
+      if (password === ADMIN_PASSWORD) {
+        openAdminDashboard();
+      } else if (password) {
+        Swal.fire({
+          icon: 'error',
+          title: 'รหัสผ่านไม่ถูกต้อง',
+          text: 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้',
+          background: '#132238',
+          color: '#ffffff',
+          confirmButtonColor: '#FF5400'
+        });
       }
     }
 
-    async function getAllRatings() {
-      const { data, error } = await db.from('anime_ratings').select('*');
-      return data || [];
+    async function openAdminDashboard() {
+      document.getElementById("formSection").classList.add("hidden");
+      document.getElementById("adminDashboard").classList.remove("hidden");
+      await loadAdminStats();
     }
 
-    async function fetchAndRenderUsers() {
-      const container = document.getElementById("userBadges");
-      container.innerHTML = `<span class="text-xs text-slate-500">กำลังโหลด...</span>`;
-      const ratings = await getAllRatings();
+    function closeAdminDashboard() {
+      document.getElementById("adminDashboard").classList.add("hidden");
+      document.getElementById("formSection").classList.remove("hidden");
+    }
+
+    // โหลดข้อมูลสถิติ Admin Dashboard
+    async function loadAdminStats() {
+      const { data: ratings, error } = await db.from('anime_ratings').select('*');
+      if (error || !ratings) return;
+
+      // คำนวณคนที่ตอบวันนี้
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const todayCount = ratings.filter(r => new Date(r.created_at) >= startOfDay).length;
+
       const users = [...new Set(ratings.map(r => r.username))];
 
-      if (users.length === 0) {
-        container.innerHTML = `<span class="text-xs text-slate-500">ยังไม่มีข้อมูลในระบบ</span>`;
-        return;
-      }
+      document.getElementById("statToday").innerText = todayCount;
+      document.getElementById("statUsers").innerText = users.length;
+      document.getElementById("statRatings").innerText = ratings.length;
 
-      container.innerHTML = users.map(u => 
-        `<button onclick="executeRecommendationFormula('${u}')" 
-          class="px-2.5 py-1 bg-[#080E1A] hover:bg-brand-blue hover:text-black border border-brand-blue/50 text-brand-blue rounded-lg text-xs font-bold transition">
-          ${u}
-        </button>`
-      ).join('');
+      // แสดง Badge รายชื่อ User
+      const container = document.getElementById("adminUserBadges");
+      container.innerHTML = users.map(u => `
+        <button onclick="inspectUser('${u}')" class="px-2.5 py-1 bg-[#080E1A] hover:bg-brand-blue hover:text-black border border-brand-blue/50 text-brand-blue rounded-lg text-xs font-bold transition">
+          👤 ${u}
+        </button>
+      `).join('');
     }
 
+    // คำนวณค่าเฉลี่ย r_bar
     function computeRBar(ratings, user) {
       const scores = ratings.filter(r => r.username === user).map(r => parseFloat(r.rating));
-      return scores.reduce((a, b) => a + b, 0) / scores.length;
+      return scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     }
 
+    // คำนวณความคล้ายคลึง Sim(u1, u2)
     function computeSim(ratings, u1, u2) {
       const r_bar1 = computeRBar(ratings, u1);
       const r_bar2 = computeRBar(ratings, u2);
@@ -293,50 +387,128 @@
       return den === 0 ? 0 : num / den;
     }
 
-    async function executeRecommendationFormula(targetUser) {
-      const ratings = await getAllRatings();
-      const r_bar = computeRBar(ratings, targetUser).toFixed(2);
-      const otherUsers = [...new Set(ratings.map(r => r.username))].filter(u => u !== targetUser);
+    // ดูรายละเอียดเจาะลึกของ User ในหน้า Admin
+    async function inspectUser(targetUser) {
+      const { data: allRatings } = await db.from('anime_ratings').select('*');
+      if (!allRatings) return;
 
+      const userRatings = allRatings.filter(r => r.username === targetUser);
+      const r_bar = computeRBar(allRatings, targetUser).toFixed(2);
+      const otherUsers = [...new Set(allRatings.map(r => r.username))].filter(u => u !== targetUser);
+
+      // คำนวณความเหมือน
       const similarities = otherUsers.map(u => ({
         user: u,
-        sim: computeSim(ratings, targetUser, u)
+        sim: computeSim(allRatings, targetUser, u)
       })).sort((a, b) => b.sim - a.sim);
 
-      const seen = ratings.filter(r => r.username === targetUser).map(r => r.anime_name);
-      const suggestions = ratings
-        .filter(r => r.username !== targetUser && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 8.0)
+      // เรื่องที่แนะนำ (จากคนที่มี Sim สูง และให้คะแนน >= 4 ดาวขึ้นไป)
+      const seen = userRatings.map(r => r.anime_name);
+      const suggestions = allRatings
+        .filter(r => r.username !== targetUser && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4)
         .map(r => r.anime_name);
-
       const uniqueSuggestions = [...new Set(suggestions)];
 
-      document.getElementById("computationResult").innerHTML = `
-        <div class="space-y-2">
-          <div class="flex justify-between items-center pb-2 border-b border-slate-700">
-            <span class="text-brand-blue font-bold">User: ${targetUser}</span>
-            <span class="text-brand-orange font-black">r̄ = ${r_bar}</span>
+      document.getElementById("adminUserDetail").innerHTML = `
+        <div class="space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+            <div>
+              <span class="text-sm font-bold text-brand-blue">${targetUser}</span>
+              <span class="text-[10px] text-slate-400 block">ตอบทั้งหมด: ${userRatings.length} เรื่อง</span>
+            </div>
+            <span class="text-xs bg-slate-800 text-brand-orange px-2 py-1 rounded font-bold">
+              r̄ เฉลี่ย: ${r_bar} ★
+            </span>
           </div>
 
           <div>
-            <p class="text-[11px] text-slate-400 font-bold mb-1">ค่าความเหมือน Sim(target, user_x):</p>
-            <div class="space-y-1">
-              ${similarities.length > 0 ? similarities.map(s => `
-                <div class="flex justify-between text-[11px]">
-                  <span class="text-slate-300">vs ${s.user}</span>
-                  <span class="${s.sim > 0.3 ? 'text-green-400 font-bold' : (s.sim < 0 ? 'text-rose-400' : 'text-slate-400')}">
-                    Sim: ${s.sim.toFixed(3)}
-                  </span>
+            <p class="text-[11px] text-slate-300 font-bold mb-1">ประวัติเรื่องที่เคยให้คะแนน:</p>
+            <div class="max-h-24 overflow-y-auto space-y-1 pr-1">
+              ${userRatings.map(r => `
+                <div class="flex justify-between items-center text-[10px] bg-[#132238] px-2 py-1 rounded border border-slate-800">
+                  <span class="truncate max-w-[200px]">${r.anime_name}</span>
+                  <span class="text-brand-orange font-bold">${'★'.repeat(r.rating)}</span>
                 </div>
-              `).join('') : '<span class="text-slate-500 text-[10px]">ยังไม่มี User อื่นให้เทียบ</span>'}
+              `).join('')}
             </div>
           </div>
 
-          <div class="pt-2 border-t border-slate-700">
-            <p class="text-[11px] text-brand-orange font-bold mb-0.5">💡 เรื่องที่คาดว่าจะชอบ (Predicted):</p>
-            <p class="text-slate-200 text-xs">${uniqueSuggestions.length > 0 ? uniqueSuggestions.join(", ") : 'ยังไม่มีเรื่องใหม่ที่ตรงเกณฑ์'}</p>
+          <div class="border-t border-slate-800 pt-2">
+            <p class="text-[11px] text-slate-300 font-bold mb-1">ความเหมือนกับ User อื่น (Sim):</p>
+            <div class="space-y-0.5 text-[10px]">
+              ${similarities.length ? similarities.slice(0, 3).map(s => `
+                <div class="flex justify-between">
+                  <span class="text-slate-400">vs ${s.user}</span>
+                  <span class="${s.sim > 0.3 ? 'text-green-400 font-bold' : 'text-slate-400'}">Sim: ${s.sim.toFixed(3)}</span>
+                </div>
+              `).join('') : '<span class="text-slate-500">ไม่มีคู่เทียบ</span>'}
+            </div>
+          </div>
+
+          <div class="border-t border-slate-800 pt-2">
+            <p class="text-[11px] text-brand-orange font-bold mb-0.5">💡 อนิเมะที่ระบบคาดว่าจะชอบ:</p>
+            <p class="text-slate-200 text-xs">${uniqueSuggestions.length ? uniqueSuggestions.join(", ") : 'ยังไม่มีข้อมูลเพียงพอ'}</p>
           </div>
         </div>
       `;
+    }
+
+    // Modal สำหรับ User ทั่วไป (ดูเรื่องแนะนำของตัวเองโดยไม่ต้องใช้รหัส)
+    async function openUserRecommendationModal() {
+      const { value: targetUser } = await Swal.fire({
+        title: 'ดูคำแนะนำสำหรับคุณ',
+        input: 'text',
+        inputLabel: 'ใส่ชื่อบัญชี / Username ของคุณ',
+        inputPlaceholder: 'เช่น Thanadun_P',
+        confirmButtonText: 'วิเคราะห์ผล',
+        confirmButtonColor: '#00F0FF',
+        showCancelButton: true,
+        cancelButtonText: 'ยกเลิก',
+        background: '#132238',
+        color: '#ffffff'
+      });
+
+      if (!targetUser) return;
+
+      const { data: allRatings } = await db.from('anime_ratings').select('*');
+      const userRatings = (allRatings || []).filter(r => r.username.toLowerCase() === targetUser.trim().toLowerCase());
+
+      if (userRatings.length === 0) {
+        Swal.fire({
+          icon: 'info',
+          title: 'ไม่พบข้อมูล',
+          text: `ยังไม่มีประวัติการให้คะแนนของ "${targetUser}" กรุณาให้คะแนนอย่างน้อย 1 เรื่องก่อน`,
+          background: '#132238',
+          color: '#ffffff',
+          confirmButtonColor: '#FF8A00'
+        });
+        return;
+      }
+
+      const seen = userRatings.map(r => r.anime_name);
+      const suggestions = allRatings
+        .filter(r => r.username.toLowerCase() !== targetUser.trim().toLowerCase() && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4)
+        .map(r => r.anime_name);
+      const uniqueSuggestions = [...new Set(suggestions)];
+
+      Swal.fire({
+        icon: 'success',
+        title: `คำแนะนำสำหรับ ${targetUser}`,
+        html: `
+          <div class="text-left text-xs space-y-2 mt-2">
+            <p class="text-slate-300">คุณเคยให้คะแนนไปแล้วทั้งหมด: <b class="text-brand-blue">${userRatings.length} เรื่อง</b></p>
+            <div class="border-t border-slate-700 pt-2">
+              <span class="font-bold text-brand-orange block mb-1">✨ เรื่องที่คอเดียวกันแนะนำให้คุณดู:</span>
+              <p class="text-white bg-[#080E1A] p-2.5 rounded-xl border border-slate-800 leading-relaxed">
+                ${uniqueSuggestions.length ? uniqueSuggestions.join("<br>• ") : "ให้คะแนนเพิ่มอีกนิดเพื่อให้ระบบหาคู่เหมือนได้แม่นยำขึ้น!"}
+              </p>
+            </div>
+          </div>
+        `,
+        background: '#132238',
+        color: '#ffffff',
+        confirmButtonColor: '#00F0FF'
+      });
     }
   </script>
 </body>
