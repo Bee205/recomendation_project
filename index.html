@@ -146,16 +146,14 @@
   </footer>
 
   <script>
-    // ----------------------------------------------------
-    // ใส่ค่าจาก SUPABASE PROJECT SETTINGS -> API ของคุณที่นี่
+// ----------------------------------------------------
+    // Supabase Configuration
     // ----------------------------------------------------
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
     
-    // ตั้งค่า Client (ถ้ายังไม่ได้ใส่ API Key จะทำงานในโหมด Fallback ออฟไลน์ให้ทดสอบได้ทันที)
-    let supabase = null;
-    if (SUPABASE_URL !== "https://kvluqwmeblzowpmktvlu.supabase.co") {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // สั่งเชื่อมต่อเข้า Supabase ทันที
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     // คลังข้อมูลอนิเมะ
