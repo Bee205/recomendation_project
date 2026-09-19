@@ -148,34 +148,39 @@
 <script>
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
+    
+    // สร้าง client แบบครอบคลุม
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let animeMasterList = [];
 
-    // แก้บั๊ก: สั่งโหลดทันที ไม่ต้องรอ Event DOMContentLoaded แล้ว
-    loadAnimesFromSupabase();
+    // เรียกทำงานทันที
+    fetchAnimeData();
 
-    async function loadAnimesFromSupabase() {
+    async function fetchAnimeData() {
       const select = document.getElementById("animeSelect");
-      select.innerHTML = '<option value="" disabled selected>⏳ กำลังดึงข้อมูล 50 เรื่องจาก Database...</option>';
+      select.innerHTML = '<option value="" disabled selected>⏳ กำลังโหลดข้อมูล...</option>';
 
       try {
-        const { data, error } = await supabase
-          .from('animes')
-          .select('title, genre, release_year')
-          .order('title', { ascending: true });
-
-        if (error) throw error;
-
-        // แก้บั๊ก: ป้องกันกรณีดึงข้อมูลแล้วได้ค่าว่าง
-        animeMasterList = data || [];
+        const res = await supabase.from('animes').select('*');
         
-        if (animeMasterList.length === 0) {
-          select.innerHTML = '<option value="" disabled selected>⚠️ ไม่พบข้อมูล (อย่าลืมไปรัน SQL เพิ่มข้อมูลนะครับ)</option>';
+        console.log("Supabase Response:", res);
+
+        if (res.error) {
+          select.innerHTML = `<option value="" disabled selected>❌ Error: ${res.error.message}</option>`;
+          alert("Supabase Error: " + res.error.message);
           return;
         }
 
-        // ดึงสำเร็จ เอาข้อมูลใส่ Dropdown
+        animeMasterList = res.data || [];
+
+        if (animeMasterList.length === 0) {
+          select.innerHTML = '<option value="" disabled selected>⚠️ ตาราง animes ว่างเปล่า (ไม่มีแถวข้อมูล)</option>';
+          alert("ดึงข้อมูลได้สำเร็จ แต่ในตาราง animes ไม่มีข้อมูลเลย (0 rows)");
+          return;
+        }
+
+        // แสดงผลเข้า Dropdown
         select.innerHTML = '<option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง --</option>';
         animeMasterList.forEach(anime => {
           const opt = document.createElement("option");
@@ -185,26 +190,23 @@
         });
 
       } catch (err) {
-        console.error("Supabase Error:", err);
-        // แสดง Error ให้เห็นจะๆ ไปเลยว่าติดที่อะไร
-        select.innerHTML = `<option value="" disabled selected>❌ ดึงข้อมูลล้มเหลว: ${err.message}</option>`;
+        console.error(err);
+        select.innerHTML = `<option value="" disabled selected>❌ JS Error: ${err.message}</option>`;
+        alert("JS Exception: " + err.message);
       }
     }
 
-    // ฟังก์ชันตอนกดเลือกเรื่อง ให้เปลี่ยน Genre / Year อัตโนมัติ
     function onAnimeSelected() {
       const title = document.getElementById("animeSelect").value;
       const found = animeMasterList.find(a => a.title === title);
       if (found) {
-        document.getElementById("genre").value = found.genre;
-        document.getElementById("year").value = found.release_year;
+        document.getElementById("genre").value = found.genre || '';
+        document.getElementById("year").value = found.release_year || '';
       }
     }
 
-    // ฟังก์ชันบันทึกข้อมูล
     async function submitData(e) {
-      e.preventDefault(); // ป้องกันหน้าเว็บ Refresh ตัวเอง (เป็นปกติของเว็บแบบ SPA)
-      
+      e.preventDefault();
       const user = document.getElementById("username").value.trim();
       const anime = document.getElementById("animeSelect").value;
       const genre = document.getElementById("genre").value;
@@ -224,17 +226,12 @@
         Swal.fire({
           icon: 'success',
           title: 'บันทึกสำเร็จ!',
-          html: `<div class="text-left text-xs space-y-1 text-slate-300">
-                   <p>👤 <b>User:</b> ${user}</p>
-                   <p>🎬 <b>Anime:</b> ${anime}</p>
-                   <p>⭐ <b>Rating:</b> <span class="text-brand-orange font-black">${rating}/10</span></p>
-                 </div>`,
+          text: `บันทึกคะแนนเรื่อง ${anime} แล้ว`,
           background: '#132238',
           color: '#ffffff',
           confirmButtonColor: '#FF8A00'
         });
 
-        // ล้างค่าช่องเลือกอนิเมะ
         document.getElementById("animeSelect").selectedIndex = 0;
         document.getElementById("genre").value = "";
         document.getElementById("year").value = "";
@@ -253,7 +250,6 @@
       }
     }
 
-    // แผง Admin Analytics
     async function toggleAdminPanel() {
       const modal = document.getElementById("adminModal");
       modal.classList.toggle("hidden");
@@ -264,17 +260,11 @@
 
     async function getAllRatings() {
       const { data, error } = await supabase.from('anime_ratings').select('*');
-      if (error) {
-        console.error(error);
-        return [];
-      }
       return data || [];
     }
 
     async function fetchAndRenderUsers() {
       const container = document.getElementById("userBadges");
-      container.innerHTML = `<span class="text-xs text-slate-500">กำลังโหลด...</span>`;
-      
       const ratings = await getAllRatings();
       const users = [...new Set(ratings.map(r => r.username))];
 
