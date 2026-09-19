@@ -145,61 +145,54 @@
     Mobile Recommendation Matrix • Blue & Orange
   </footer>
 
-  <script>
-// ----------------------------------------------------
-    // Supabase Configuration
-    // ----------------------------------------------------
+<script>
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
-    
-    // สั่งเชื่อมต่อเข้า Supabase ทันที
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
 
-    // คลังข้อมูลอนิเมะ
-    const animeMasterList = [
-      { title: "Mushoku Tensei: Isekai Ittara Honki Dasu", genre: "Isekai, Fantasy, Adventure", year: 2021 },
-      { title: "Sousou no Frieren", genre: "Fantasy, Adventure, Drama", year: 2023 },
-      { title: "Jujutsu Kaisen", genre: "Action, Supernatural, Fantasy", year: 2020 },
-      { title: "Cyberpunk: Edgerunners", genre: "Sci-Fi, Action, Thriller", year: 2022 },
-      { title: "Attack on Titan", genre: "Action, Dark Fantasy, Mystery", year: 2013 },
-      { title: "Steins;Gate", genre: "Sci-Fi, Psychological, Thriller", year: 2011 },
-      { title: "Bocchi the Rock!", genre: "Comedy, Music, Slice of Life", year: 2022 },
-      { title: "Sword Art Online", genre: "Action, Sci-Fi, Adventure", year: 2012 },
-      { title: "Chainsaw Man", genre: "Action, Supernatural, Gore", year: 2022 },
-      { title: "Solo Leveling", genre: "Action, Fantasy", year: 2024 }
-    ];
+    let animeMasterList = [];
 
-    // Local dataset สำหรับ fallback
-    let memoryDataset = [
-      { username: "Thanadun", anime_name: "Mushoku Tensei: Isekai Ittara Honki Dasu", rating: 9.5 },
-      { username: "Thanadun", anime_name: "Sousou no Frieren", rating: 9.0 },
-      { username: "Guest_A", anime_name: "Mushoku Tensei: Isekai Ittara Honki Dasu", rating: 9.0 },
-      { username: "Guest_A", anime_name: "Cyberpunk: Edgerunners", rating: 10.0 },
-      { username: "Guest_B", anime_name: "Sword Art Online", rating: 8.5 }
-    ];
-
-    // โหลดรายชื่ออนิเมะเข้า Dropdown ตอนเปิดเว็บ
-    window.addEventListener('DOMContentLoaded', () => {
-      const select = document.getElementById("animeSelect");
-      animeMasterList.forEach(anime => {
-        const opt = document.createElement("option");
-        opt.value = anime.title;
-        opt.innerText = `${anime.title} (${anime.year})`;
-        select.appendChild(opt);
-      });
+    // โหลดรายชื่ออนิเมะ 50 เรื่องจาก Supabase เมื่อเปิดเว็บ
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadAnimesFromSupabase();
     });
+
+    async function loadAnimesFromSupabase() {
+      const select = document.getElementById("animeSelect");
+      select.innerHTML = '<option value="" disabled selected>กำลังดึงข้อมูลจาก Cloud...</option>';
+
+      try {
+        const { data, error } = await supabase
+          .from('animes')
+          .select('title, genre, release_year')
+          .order('title', { ascending: true });
+
+        if (error) throw error;
+
+        animeMasterList = data;
+        select.innerHTML = '<option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง (50 เรื่อง) --</option>';
+        
+        animeMasterList.forEach(anime => {
+          const opt = document.createElement("option");
+          opt.value = anime.title;
+          opt.innerText = `${anime.title} (${anime.release_year})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error(err);
+        select.innerHTML = '<option value="" disabled selected>โหลดข้อมูลไม่สำเร็จ ลองรีเฟรช</option>';
+      }
+    }
 
     function onAnimeSelected() {
       const title = document.getElementById("animeSelect").value;
       const found = animeMasterList.find(a => a.title === title);
       if (found) {
         document.getElementById("genre").value = found.genre;
-        document.getElementById("year").value = found.year;
+        document.getElementById("year").value = found.release_year;
       }
     }
 
-    // บันทึกข้อมูล
     async function submitData(e) {
       e.preventDefault();
       const user = document.getElementById("username").value.trim();
@@ -213,16 +206,10 @@
       submitBtn.innerText = "กำลังบันทึก...";
 
       try {
-        if (supabase) {
-          // บันทึกลง Supabase จริง
-          const { error } = await supabase.from('anime_ratings').insert([
-            { username: user, anime_name: anime, genre, release_year: year, rating }
-          ]);
-          if (error) throw error;
-        } else {
-          // โหมดทดสอบถ้ายังไม่ได้ใส่ Key
-          memoryDataset.push({ username: user, anime_name: anime, rating });
-        }
+        const { error } = await supabase.from('anime_ratings').insert([
+          { username: user, anime_name: anime, genre, release_year: year, rating }
+        ]);
+        if (error) throw error;
 
         Swal.fire({
           icon: 'success',
@@ -256,7 +243,6 @@
       }
     }
 
-    // แผง Admin & คำนวณ
     async function toggleAdminPanel() {
       const modal = document.getElementById("adminModal");
       modal.classList.toggle("hidden");
@@ -266,15 +252,12 @@
     }
 
     async function getAllRatings() {
-      if (supabase) {
-        const { data, error } = await supabase.from('anime_ratings').select('*');
-        if (error) {
-          console.error(error);
-          return memoryDataset;
-        }
-        return data;
+      const { data, error } = await supabase.from('anime_ratings').select('*');
+      if (error) {
+        console.error(error);
+        return [];
       }
-      return memoryDataset;
+      return data;
     }
 
     async function fetchAndRenderUsers() {
@@ -295,13 +278,11 @@
       ).join('');
     }
 
-    // คำนวณค่าเฉลี่ย r_bar
     function computeRBar(ratings, user) {
       const scores = ratings.filter(r => r.username === user).map(r => parseFloat(r.rating));
       return scores.reduce((a, b) => a + b, 0) / scores.length;
     }
 
-    // คำนวณ Sim(u, v)
     function computeSim(ratings, u1, u2) {
       const r_bar1 = computeRBar(ratings, u1);
       const r_bar2 = computeRBar(ratings, u2);
@@ -330,13 +311,11 @@
       const r_bar = computeRBar(ratings, targetUser).toFixed(2);
       const otherUsers = [...new Set(ratings.map(r => r.username))].filter(u => u !== targetUser);
 
-      // คำนวณ Sim กับทุกคน
       const similarities = otherUsers.map(u => ({
         user: u,
         sim: computeSim(ratings, targetUser, u)
       })).sort((a, b) => b.sim - a.sim);
 
-      // หาเรื่องแนะนำ
       const seen = ratings.filter(r => r.username === targetUser).map(r => r.anime_name);
       const suggestions = ratings
         .filter(r => r.username !== targetUser && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 8.0)
