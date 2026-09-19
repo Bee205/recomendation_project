@@ -140,20 +140,20 @@
   </footer>
 
   <script>
-    // ตั้งชื่อ dbClient เพื่อป้องกันการชนกับ library อื่น
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
-    const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // ใช้ชื่อ db แทน ห้ามตั้งชื่อ supabase เด็ดขาด
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let animeMasterList = [];
 
-    // เรียกดึงข้อมูลทันที
     fetchAnimeList();
 
     async function fetchAnimeList() {
       const select = document.getElementById("animeSelect");
       try {
-        const { data, error } = await dbClient
+        const { data, error } = await db
           .from('animes')
           .select('title, genre, release_year')
           .order('title', { ascending: true });
@@ -201,7 +201,7 @@
       submitBtn.innerText = "กำลังบันทึก...";
 
       try {
-        const { error } = await dbClient.from('anime_ratings').insert([
+        const { error } = await db.from('anime_ratings').insert([
           { username: user, anime_name: anime, genre, release_year: year, rating }
         ]);
         if (error) throw error;
@@ -242,7 +242,7 @@
     }
 
     async function getAllRatings() {
-      const { data, error } = await dbClient.from('anime_ratings').select('*');
+      const { data, error } = await db.from('anime_ratings').select('*');
       return data || [];
     }
 
