@@ -152,14 +152,12 @@
 
     let animeMasterList = [];
 
-    // โหลดรายชื่ออนิเมะ 50 เรื่องจาก Supabase เมื่อเปิดเว็บ
-    window.addEventListener('DOMContentLoaded', async () => {
-      await loadAnimesFromSupabase();
-    });
+    // แก้บั๊ก: สั่งโหลดทันที ไม่ต้องรอ Event DOMContentLoaded แล้ว
+    loadAnimesFromSupabase();
 
     async function loadAnimesFromSupabase() {
       const select = document.getElementById("animeSelect");
-      select.innerHTML = '<option value="" disabled selected>กำลังดึงข้อมูลจาก Cloud...</option>';
+      select.innerHTML = '<option value="" disabled selected>⏳ กำลังดึงข้อมูล 50 เรื่องจาก Database...</option>';
 
       try {
         const { data, error } = await supabase
@@ -169,21 +167,31 @@
 
         if (error) throw error;
 
-        animeMasterList = data;
-        select.innerHTML = '<option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง (50 เรื่อง) --</option>';
+        // แก้บั๊ก: ป้องกันกรณีดึงข้อมูลแล้วได้ค่าว่าง
+        animeMasterList = data || [];
         
+        if (animeMasterList.length === 0) {
+          select.innerHTML = '<option value="" disabled selected>⚠️ ไม่พบข้อมูล (อย่าลืมไปรัน SQL เพิ่มข้อมูลนะครับ)</option>';
+          return;
+        }
+
+        // ดึงสำเร็จ เอาข้อมูลใส่ Dropdown
+        select.innerHTML = '<option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง --</option>';
         animeMasterList.forEach(anime => {
           const opt = document.createElement("option");
           opt.value = anime.title;
           opt.innerText = `${anime.title} (${anime.release_year})`;
           select.appendChild(opt);
         });
+
       } catch (err) {
-        console.error(err);
-        select.innerHTML = '<option value="" disabled selected>โหลดข้อมูลไม่สำเร็จ ลองรีเฟรช</option>';
+        console.error("Supabase Error:", err);
+        // แสดง Error ให้เห็นจะๆ ไปเลยว่าติดที่อะไร
+        select.innerHTML = `<option value="" disabled selected>❌ ดึงข้อมูลล้มเหลว: ${err.message}</option>`;
       }
     }
 
+    // ฟังก์ชันตอนกดเลือกเรื่อง ให้เปลี่ยน Genre / Year อัตโนมัติ
     function onAnimeSelected() {
       const title = document.getElementById("animeSelect").value;
       const found = animeMasterList.find(a => a.title === title);
@@ -193,8 +201,10 @@
       }
     }
 
+    // ฟังก์ชันบันทึกข้อมูล
     async function submitData(e) {
-      e.preventDefault();
+      e.preventDefault(); // ป้องกันหน้าเว็บ Refresh ตัวเอง (เป็นปกติของเว็บแบบ SPA)
+      
       const user = document.getElementById("username").value.trim();
       const anime = document.getElementById("animeSelect").value;
       const genre = document.getElementById("genre").value;
@@ -221,17 +231,17 @@
                  </div>`,
           background: '#132238',
           color: '#ffffff',
-          confirmButtonColor: '#FF8A00',
-          confirmButtonText: 'รับทราบ'
+          confirmButtonColor: '#FF8A00'
         });
 
+        // ล้างค่าช่องเลือกอนิเมะ
         document.getElementById("animeSelect").selectedIndex = 0;
         document.getElementById("genre").value = "";
         document.getElementById("year").value = "";
       } catch (err) {
         Swal.fire({
           icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
+          title: 'บันทึกไม่สำเร็จ',
           text: err.message,
           background: '#132238',
           color: '#ffffff',
@@ -243,6 +253,7 @@
       }
     }
 
+    // แผง Admin Analytics
     async function toggleAdminPanel() {
       const modal = document.getElementById("adminModal");
       modal.classList.toggle("hidden");
@@ -257,11 +268,13 @@
         console.error(error);
         return [];
       }
-      return data;
+      return data || [];
     }
 
     async function fetchAndRenderUsers() {
       const container = document.getElementById("userBadges");
+      container.innerHTML = `<span class="text-xs text-slate-500">กำลังโหลด...</span>`;
+      
       const ratings = await getAllRatings();
       const users = [...new Set(ratings.map(r => r.username))];
 
