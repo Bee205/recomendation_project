@@ -53,8 +53,8 @@
         A
       </div>
       <div>
-        <h1 class="text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME MATRIX</h1>
-        <span class="text-[10px] text-slate-400">ระบบเก็บ Rating ประมวลผล</span>
+        <h1 class="text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME RECOMENDATION</h1>
+        <span class="text-[10px] text-slate-400">ระบบเก็บ Rating และประมวลผล</span>
       </div>
     </div>
     
@@ -83,7 +83,7 @@
       <form id="ratingForm" onsubmit="submitData(event)" class="space-y-4 text-left">
         <div>
           <label class="block text-xs font-bold text-brand-blue mb-1">👤 บัญชีผู้ใช้ / ชื่อของคุณ:</label>
-          <input type="text" id="username" required placeholder="เช่น Thanadun_P" 
+          <input type="text" id="username" required placeholder="เช่น Saber" 
             class="w-full text-base px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white placeholder-slate-600 transition" />
         </div>
 
@@ -98,12 +98,12 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-medium text-slate-400 mb-1">🏷️ หมวดหมู่:</label>
-            <input type="text" id="genre" readonly placeholder="ดึงอัตโนมัติ" 
+            <input type="text" id="genre" readonly placeholder="กรอกอัตโนมัติ" 
               class="w-full text-xs px-3 py-2 bg-[#080E1A]/60 border border-slate-800 rounded-lg text-slate-300 font-semibold cursor-not-allowed" />
           </div>
           <div>
             <label class="block text-[11px] font-medium text-slate-400 mb-1">📅 ปีที่ฉาย:</label>
-            <input type="text" id="year" readonly placeholder="ดึงอัตโนมัติ" 
+            <input type="text" id="year" readonly placeholder="กรอกอัตโนมัติ" 
               class="w-full text-xs px-3 py-2 bg-[#080E1A]/60 border border-slate-800 rounded-lg text-slate-300 font-semibold cursor-not-allowed" />
           </div>
         </div>
@@ -125,7 +125,7 @@
         </div>
 
         <button type="submit" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-brand-orange to-brand-neonOrange active:scale-95 text-black font-black text-sm rounded-xl transition-all shadow-lg shadow-brand-orange/20">
-          🔥 บันทึกคะแนนลง Cloud
+          🔥 บันทึกคะแนนลงบน Cloud
         </button>
       </form>
     </div>
@@ -183,7 +183,7 @@
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ADMIN_PASSWORD = "admin1234"; // รหัสผ่านแอดมิน (เปลี่ยนตามต้องการ)
+    const ADMIN_PASSWORD = "1234"; // รหัสผ่านแอดมิน (เปลี่ยนตามต้องการ)
 
     let animeMasterList = [];
     let currentRating = 5;
