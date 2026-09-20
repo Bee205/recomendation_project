@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Anime Matrix Engine</title>
-  <!-- ป้องกัน Favicon 404 ด้วย Inline SVG Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+  <title>Anime Matrix Stream</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
   
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+  <!-- Chart.js สำหรับกราฟแดชบอร์ด -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -18,8 +22,9 @@
           colors: {
             brand: {
               blue: '#00F0FF',
-              darkBlue: '#0B1528',
-              cardBlue: '#132238',
+              darkBlue: '#070D18',
+              cardBlue: '#0E1A2E',
+              cardHover: '#162846',
               orange: '#FF8A00',
               neonOrange: '#FF5400'
             }
@@ -29,174 +34,388 @@
     }
   </script>
   <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070D18; }
+    ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00F0FF; }
+
     .star-btn {
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease-in-out;
     }
     .star-btn:hover, .star-btn:active {
-      transform: scale(1.35) rotate(5deg);
+      transform: scale(1.35) rotate(6deg);
     }
     .star-active {
       color: #FF8A00;
-      filter: drop-shadow(0 0 6px rgba(255, 138, 0, 0.7));
+      filter: drop-shadow(0 0 8px rgba(255, 138, 0, 0.8));
     }
     .star-inactive {
       color: #334155;
+    }
+    .poster-card {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .poster-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 25px -5px rgba(0, 240, 255, 0.25);
     }
   </style>
 </head>
 <body class="bg-brand-darkBlue text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-brand-blue selection:text-black">
 
-  <!-- Top Navigation -->
-  <nav class="sticky top-0 z-50 bg-[#0B1528]/95 backdrop-blur border-b border-brand-blue/30 px-4 py-3 flex justify-between items-center shadow-lg">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-orange to-brand-blue flex items-center justify-center font-black text-black text-lg">
-        A
+  <!-- ================= TOP NAVBAR ================= -->
+  <nav class="sticky top-0 z-40 bg-brand-darkBlue/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex justify-between items-center shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-brand-blue flex items-center justify-center font-black text-black text-xl shadow-md">
+        N
       </div>
       <div>
-        <h1 class="text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME RECOMENDATION</h1>
-        <span class="text-[10px] text-slate-400">ระบบเก็บ Rating และประมวลผล</span>
+        <h1 class="text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME MATRIX</h1>
+        <span class="text-[10px] text-slate-400">Netflix-Style Recommendation System</span>
       </div>
     </div>
     
-    <div class="flex gap-2">
-      <button onclick="openUserRecommendationModal()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-black active:scale-95 transition">
-        💡 คำแนะนำสำหรับฉัน
+    <div class="flex items-center gap-2">
+      <button onclick="openUserRecommendationModal()" class="px-3 py-1.5 text-xs font-bold rounded-xl border border-brand-blue/60 text-brand-blue hover:bg-brand-blue hover:text-black transition shadow-sm active:scale-95">
+        💡 แนะนำสำหรับฉัน
       </button>
-      <button onclick="promptAdminLogin()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-black active:scale-95 transition">
+      <button onclick="promptAdminLogin()" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black hover:opacity-90 transition shadow-sm active:scale-95">
         🔑 แอดมิน
       </button>
     </div>
   </nav>
 
-  <!-- Main Container -->
-  <main class="w-full max-w-lg mx-auto p-4 flex-grow flex flex-col justify-center">
-    
-    <!-- User Input Card -->
-    <div id="formSection" class="bg-brand-cardBlue border border-brand-blue/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-brand-orange/15 rounded-full blur-3xl pointer-events-none"></div>
+  <!-- ================= USER VIEW: NETFLIX-STYLE POSTER GRID ================= -->
+  <section id="userCatalogSection" class="flex-grow max-w-6xl w-full mx-auto px-4 py-6">
+    <!-- Banner & Search -->
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+      <div>
+        <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-2">
+          แตะที่เรื่องเพื่อ <span class="text-brand-orange">โหวตให้คะแนน ⭐</span>
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">ระบบจะรวบรวมรสนิยมของคุณเพื่อแนะนำอนิเมะที่ตรงใจที่สุด</p>
+      </div>
+      
+      <!-- Search Box -->
+      <div class="relative w-full md:w-72">
+        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหาชื่ออนิเมะ..." 
+          class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
+      </div>
+    </div>
 
-      <div class="mb-4 text-center">
-        <h2 class="text-xl font-black text-brand-orange tracking-tight">📝 บันทึกข้อมูลคะแนน</h2>
-        <p class="text-xs text-slate-400 mt-0.5">ให้คะแนนอนิเมะเพื่อนำไปประมวลผลความชอบ</p>
+    <!-- Anime Grid Container -->
+    <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <!-- Skeleton Loading -->
+      <div class="col-span-full py-16 text-center text-slate-500 text-sm">
+        ⏳ กำลังโหลดคลังอนิเมะระดับพรีเมียม...
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RATING MODAL (NETFLIX POPUP) ================= -->
+  <div id="ratingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-cardBlue border-2 border-brand-orange/60 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      <!-- Close Button -->
+      <button onclick="closeRatingModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full w-7 h-7 flex items-center justify-center text-xs">
+        ✕
+      </button>
+
+      <div class="text-center">
+        <!-- Anime Poster Preview in Modal -->
+        <div class="w-24 h-32 mx-auto rounded-xl overflow-hidden shadow-lg border border-slate-700 mb-3 bg-slate-900">
+          <img id="modalPosterImg" src="" alt="Poster" class="w-full h-full object-cover">
+        </div>
+
+        <h3 id="modalAnimeTitle" class="text-base font-extrabold text-brand-blue truncate">Anime Name</h3>
+        <p id="modalAnimeMeta" class="text-[11px] text-slate-400 mt-0.5">Genre • Year</p>
       </div>
 
-      <form id="ratingForm" onsubmit="submitData(event)" class="space-y-4 text-left">
+      <form onsubmit="submitModalRating(event)" class="mt-4 space-y-4">
         <div>
-          <label class="block text-xs font-bold text-brand-blue mb-1">👤 บัญชีผู้ใช้ / ชื่อของคุณ:</label>
-          <input type="text" id="username" required placeholder="เช่น Saber" 
-            class="w-full text-base px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white placeholder-slate-600 transition" />
+          <label class="block text-xs font-bold text-slate-300 mb-1">👤 บัญชีผู้ใช้ / ชื่อเล่นของคุณ:</label>
+          <input type="text" id="modalUsername" required placeholder="เช่น Thanadun" 
+            class="w-full text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white placeholder-slate-600 transition" />
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-brand-blue mb-1">🎬 เลือกเรื่องอนิเมะ:</label>
-          <select id="animeSelect" onchange="onAnimeSelected()" required 
-            class="w-full text-base px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white cursor-pointer transition">
-            <option value="" disabled selected>⏳ กำลังโหลดข้อมูล...</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">🏷️ หมวดหมู่:</label>
-            <input type="text" id="genre" readonly placeholder="กรอกอัตโนมัติ" 
-              class="w-full text-xs px-3 py-2 bg-[#080E1A]/60 border border-slate-800 rounded-lg text-slate-300 font-semibold cursor-not-allowed" />
+        <!-- Star Rating -->
+        <div class="bg-[#080E1A]/60 p-3 rounded-2xl border border-slate-800 text-center">
+          <div class="flex justify-between items-center mb-1 px-1">
+            <span class="text-xs font-bold text-brand-orange">ระดับความชอบ:</span>
+            <span id="modalStarLabel" class="text-xs font-black text-brand-orange">5 / 5 ดาว</span>
           </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">📅 ปีที่ฉาย:</label>
-            <input type="text" id="year" readonly placeholder="กรอกอัตโนมัติ" 
-              class="w-full text-xs px-3 py-2 bg-[#080E1A]/60 border border-slate-800 rounded-lg text-slate-300 font-semibold cursor-not-allowed" />
+          <div class="flex justify-center gap-2.5 my-1">
+            <button type="button" onclick="setModalRating(1)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(2)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(3)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(4)" class="star-btn text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(5)" class="star-btn text-3xl star-active">★</button>
           </div>
         </div>
 
-        <!-- 5-Star Interactive Rating -->
-        <div class="pt-2 bg-[#080E1A]/40 p-4 rounded-2xl border border-slate-800/80 text-center">
-          <div class="flex justify-between items-center mb-2 px-1">
-            <span class="text-xs font-bold text-brand-blue">⭐ ระดับความชอบ:</span>
-            <span id="starScoreLabel" class="text-sm font-black text-brand-orange">5 / 5 ดาว</span>
-          </div>
-          
-          <div class="flex justify-center gap-3 my-1">
-            <button type="button" onclick="setRating(1)" class="star-btn text-3xl star-active">★</button>
-            <button type="button" onclick="setRating(2)" class="star-btn text-3xl star-active">★</button>
-            <button type="button" onclick="setRating(3)" class="star-btn text-3xl star-active">★</button>
-            <button type="button" onclick="setRating(4)" class="star-btn text-3xl star-active">★</button>
-            <button type="button" onclick="setRating(5)" class="star-btn text-3xl star-active">★</button>
-          </div>
-        </div>
-
-        <button type="submit" id="submitBtn" class="w-full py-3.5 bg-gradient-to-r from-brand-orange to-brand-neonOrange active:scale-95 text-black font-black text-sm rounded-xl transition-all shadow-lg shadow-brand-orange/20">
-          🔥 บันทึกคะแนนลงบน Cloud
+        <button type="submit" id="modalSubmitBtn" class="w-full py-3 bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black text-sm rounded-xl transition shadow-lg shadow-brand-orange/20 active:scale-95">
+          🔥 บันทึกคะแนนลง Cloud
         </button>
       </form>
     </div>
+  </div>
 
-    <!-- Admin Dashboard Section -->
-    <div id="adminDashboard" class="hidden bg-brand-cardBlue border-2 border-brand-orange rounded-3xl p-5 shadow-2xl space-y-4">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <div>
-          <h3 class="text-sm font-black text-brand-orange">📊 Admin Dashboard</h3>
-          <p class="text-[10px] text-slate-400">สถิติระบบและผลการคำนวณ Collaborative Filtering</p>
+  <!-- ================= ADMIN DASHBOARD (SIDEBAR + CHARTS + MATRIX) ================= -->
+  <section id="adminDashboardSection" class="hidden flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 gap-4">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="w-full md:w-64 bg-brand-cardBlue border border-slate-800 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
+      <div class="space-y-4">
+        <div class="border-b border-slate-800 pb-3">
+          <span class="text-xs font-black text-brand-orange uppercase tracking-wider">Admin Center</span>
+          <h3 class="text-base font-bold text-white">ระบบควบคุมการวิเคราะห์</h3>
         </div>
-        <button onclick="closeAdminDashboard()" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800">
-          ✕ ปิด
+
+        <!-- Sidebar Navigation Menu -->
+        <nav class="space-y-1">
+          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition flex items-center gap-2">
+            📈 ภาพรวมสถิติ & กราฟ
+          </button>
+          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
+            👥 วิเคราะห์ราย User
+          </button>
+          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
+            📋 ตารางคะแนนทั้งหมด
+          </button>
+        </nav>
+      </div>
+
+      <!-- Exit Button -->
+      <div class="pt-4 border-t border-slate-800">
+        <button onclick="exitAdminMode()" class="w-full py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition">
+          🚪 ออกจากโหมด Admin
         </button>
       </div>
+    </aside>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div class="bg-[#080E1A] p-2.5 rounded-xl border border-slate-800">
-          <span class="text-[10px] text-slate-400 block">ตอบวันนี้</span>
-          <span id="statToday" class="text-base font-black text-green-400">0</span>
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="flex-grow bg-brand-cardBlue border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-5 overflow-hidden">
+      
+      <!-- TAB 1: OVERVIEW & GRAPHS -->
+      <div id="tabContent-overview" class="space-y-5">
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
+            <span class="text-[11px] text-slate-400 font-semibold block">ผู้ใช้งานทั้งหมด</span>
+            <span id="dashTotalUsers" class="text-2xl font-black text-brand-blue">0</span>
+          </div>
+          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
+            <span class="text-[11px] text-slate-400 font-semibold block">จำนวนคะแนนทั้งหมด</span>
+            <span id="dashTotalRatings" class="text-2xl font-black text-brand-orange">0</span>
+          </div>
+          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
+            <span class="text-[11px] text-slate-400 font-semibold block">ตอบวันนี้</span>
+            <span id="dashTodayRatings" class="text-2xl font-black text-green-400">0</span>
+          </div>
+          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
+            <span class="text-[11px] text-slate-400 font-semibold block">คะแนนเฉลี่ยระบบ</span>
+            <span id="dashGlobalAvg" class="text-2xl font-black text-yellow-300">0.0 ★</span>
+          </div>
         </div>
-        <div class="bg-[#080E1A] p-2.5 rounded-xl border border-slate-800">
-          <span class="text-[10px] text-slate-400 block">ผู้ใช้ทั้งหมด</span>
-          <span id="statUsers" class="text-base font-black text-brand-blue">0</span>
-        </div>
-        <div class="bg-[#080E1A] p-2.5 rounded-xl border border-slate-800">
-          <span class="text-[10px] text-slate-400 block">คะแนนทั้งหมด</span>
-          <span id="statRatings" class="text-base font-black text-brand-orange">0</span>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Chart 1: Rating Distribution -->
+          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
+            <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+              <span>📊 การกระจายตัวของคะแนน (1 - 5 ดาว)</span>
+            </h4>
+            <div class="h-56">
+              <canvas id="chartRatingDist"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Top Voted Anime -->
+          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
+            <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+              <span>🏆 5 อันดับเรื่องที่มีคนโหวตมากที่สุด</span>
+            </h4>
+            <div class="h-56">
+              <canvas id="chartTopAnime"></canvas>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- User List -->
-      <div>
-        <span class="text-xs text-slate-300 font-semibold block mb-1.5">เลือก User เพื่อดูประวัติและผลลัพธ์:</span>
-        <div id="adminUserBadges" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
-          <span class="text-xs text-slate-500">กำลังโหลด...</span>
+      <!-- TAB 2: USER MATRIX & SIMILARITY -->
+      <div id="tabContent-users" class="hidden space-y-4">
+        <div>
+          <span class="text-xs text-slate-300 font-semibold block mb-2">เลือก User เพื่อประมวลผลโมเดล:</span>
+          <div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1 bg-[#080E1A] rounded-2xl border border-slate-800">
+            <span class="text-xs text-slate-500">กำลังโหลด User...</span>
+          </div>
+        </div>
+
+        <!-- User Analysis Result -->
+        <div id="adminUserMatrixBox" class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800 text-xs text-slate-400">
+          👈 กรุณาคลิกเลือกชื่อ User ด้านบนเพื่อเริ่มคำนวณ r̄ และ Cosine/Pearson Similarity
         </div>
       </div>
 
-      <!-- User Detailed Analytics View -->
-      <div id="adminUserDetail" class="bg-[#080E1A] p-3.5 rounded-2xl border border-slate-800 text-xs">
-        คลิกเลือกผู้ใช้ด้านบนเพื่อตรวจสอบรายละเอียด
+      <!-- TAB 3: ALL RATINGS TABLE -->
+      <div id="tabContent-ratings" class="hidden space-y-3">
+        <h4 class="text-xs font-bold text-slate-300">ประวัติการให้คะแนนแบบละเอียด</h4>
+        <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-[#080E1A] max-h-96">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/80 text-brand-blue uppercase text-[10px] border-b border-slate-800 sticky top-0">
+              <tr>
+                <th class="p-3">User</th>
+                <th class="p-3">อนิเมะ</th>
+                <th class="p-3">แนว</th>
+                <th class="p-3">ปี</th>
+                <th class="p-3 text-right">คะแนน</th>
+              </tr>
+            </thead>
+            <tbody id="adminRatingsTableBody" class="divide-y divide-slate-800/60">
+              <tr><td colspan="5" class="p-4 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </div>
+  </section>
 
-  </main>
-
+  <!-- ================= FOOTER ================= -->
   <footer class="py-3 text-center text-[11px] text-slate-500 border-t border-slate-800">
-    Mobile Recommendation Matrix • Blue & Orange
+    Anime Recommendation Matrix Engine • Powered by Collaborative Filtering
   </footer>
 
+  <!-- ================= LOGIC & JAVASCRIPT ================= -->
   <script>
+    // Supabase Setup
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ADMIN_PASSWORD = "1234"; // รหัสผ่านแอดมิน (เปลี่ยนตามต้องการ)
+    const ADMIN_PASSWORD = "1234";
 
+    // State
     let animeMasterList = [];
-    let currentRating = 5;
+    let selectedAnime = null;
+    let modalRatingVal = 5;
+    let distChart = null;
+    let topChart = null;
 
-    fetchAnimeList();
+    // Poster Image Fallback (Unsplash Anime-Aesthetic Posters)
+    const posterPool = [
+      "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1563089145-599997674d42?w=500&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1569701814238-d65492d5c317?w=500&auto=format&fit=crop&q=80"
+    ];
 
-    // จัดการระบบเลือก 5 ดาว
-    function setRating(rating) {
-      currentRating = rating;
-      document.getElementById("starScoreLabel").innerText = `${rating} / 5 ดาว`;
-      const buttons = document.querySelectorAll(".star-btn");
+    // โหลดข้อมูลอนิเมะ
+    fetchAnimeCatalog();
+
+    async function fetchAnimeCatalog() {
+      const grid = document.getElementById("animeGrid");
+      try {
+        const { data, error } = await db
+          .from('animes')
+          .select('id, title, genre, release_year')
+          .order('title', { ascending: true });
+
+        if (error) throw error;
+        animeMasterList = data || [];
+
+        if (animeMasterList.length === 0) {
+          grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">⚠️ ไม่พบข้อมูลอนิเมะในระบบ</div>`;
+          return;
+        }
+
+        renderGrid(animeMasterList);
+      } catch (err) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-red-400">❌ โหลดคลังอนิเมะล้มเหลว: ${err.message}</div>`;
+      }
+    }
+
+    // เรนเดอร์การ์ดโปสเตอร์สไตล์ Netflix
+    function renderGrid(list) {
+      const grid = document.getElementById("animeGrid");
+      grid.innerHTML = list.map((anime, index) => {
+        // เลือกลิ้งค์โปสเตอร์จำลองตาม index ให้ดูเป็นภาพกราฟิกสวยงาม
+        const posterUrl = posterPool[index % posterPool.length];
+        return `
+          <div onclick="openRatingModal('${escapeHtml(anime.title)}')" 
+            class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col group relative">
+            
+            <!-- Poster Aspect Ratio 2:3 -->
+            <div class="relative w-full pb-[140%] bg-slate-900 overflow-hidden">
+              <img src="${posterUrl}" alt="${anime.title}" loading="lazy" 
+                class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
+              
+              <div class="absolute inset-0 bg-gradient-to-t from-brand-cardBlue via-transparent to-transparent opacity-90"></div>
+              
+              <!-- Badge Year -->
+              <span class="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur text-[10px] font-bold text-brand-orange border border-brand-orange/30">
+                ${anime.release_year}
+              </span>
+            </div>
+
+            <!-- Content Details -->
+            <div class="p-3 flex-grow flex flex-col justify-between">
+              <div>
+                <h4 class="text-xs font-black text-white group-hover:text-brand-blue line-clamp-2 leading-tight transition">
+                  ${anime.title}
+                </h4>
+                <p class="text-[10px] text-slate-400 line-clamp-1 mt-1">
+                  ${anime.genre}
+                </p>
+              </div>
+
+              <div class="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between">
+                <span class="text-[10px] text-brand-orange font-bold flex items-center gap-1">
+                  ★ ให้คะแนน
+                </span>
+                <span class="text-[10px] text-slate-500 group-hover:text-slate-300">แตะเพื่อโหวต</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAnimeGrid() {
+      const q = document.getElementById("searchInput").value.toLowerCase().trim();
+      const filtered = animeMasterList.filter(a => 
+        a.title.toLowerCase().includes(q) || a.genre.toLowerCase().includes(q)
+      );
+      renderGrid(filtered);
+    }
+
+    // Modal Rating Handlers
+    function openRatingModal(title) {
+      selectedAnime = animeMasterList.find(a => a.title === title);
+      if (!selectedAnime) return;
+
+      document.getElementById("modalAnimeTitle").innerText = selectedAnime.title;
+      document.getElementById("modalAnimeMeta").innerText = `${selectedAnime.genre} • ปี ${selectedAnime.release_year}`;
+      
+      const idx = animeMasterList.findIndex(a => a.title === title);
+      document.getElementById("modalPosterImg").src = posterPool[idx % posterPool.length];
+
+      setModalRating(5);
+      document.getElementById("ratingModal").classList.remove("hidden");
+    }
+
+    function closeRatingModal() {
+      document.getElementById("ratingModal").classList.add("hidden");
+    }
+
+    function setModalRating(val) {
+      modalRatingVal = val;
+      document.getElementById("modalStarLabel").innerText = `${val} / 5 ดาว`;
+      const buttons = document.querySelectorAll("#ratingModal .star-btn");
       buttons.forEach((btn, idx) => {
-        if (idx < rating) {
+        if (idx < val) {
           btn.classList.add("star-active");
           btn.classList.remove("star-inactive");
         } else {
@@ -206,82 +425,44 @@
       });
     }
 
-    async function fetchAnimeList() {
-      const select = document.getElementById("animeSelect");
-      try {
-        const { data, error } = await db
-          .from('animes')
-          .select('title, genre, release_year')
-          .order('title', { ascending: true });
-
-        if (error) throw error;
-
-        animeMasterList = data || [];
-        if (animeMasterList.length === 0) {
-          select.innerHTML = '<option value="" disabled selected>⚠️ ไม่พบข้อมูลในตาราง animes</option>';
-          return;
-        }
-
-        select.innerHTML = '<option value="" disabled selected>-- แตะเพื่อเลือกเรื่อง --</option>';
-        animeMasterList.forEach(a => {
-          const opt = document.createElement("option");
-          opt.value = a.title;
-          opt.innerText = `${a.title} (${a.release_year})`;
-          select.appendChild(opt);
-        });
-      } catch (err) {
-        console.error(err);
-        select.innerHTML = `<option value="" disabled selected>❌ โหลดไม่สำเร็จ: ${err.message}</option>`;
-      }
-    }
-
-    function onAnimeSelected() {
-      const title = document.getElementById("animeSelect").value;
-      const found = animeMasterList.find(a => a.title === title);
-      if (found) {
-        document.getElementById("genre").value = found.genre || '';
-        document.getElementById("year").value = found.release_year || '';
-      }
-    }
-
-    // บันทึกข้อมูล
-    async function submitData(e) {
+    async function submitModalRating(e) {
       e.preventDefault();
-      const user = document.getElementById("username").value.trim();
-      const anime = document.getElementById("animeSelect").value;
-      const genre = document.getElementById("genre").value;
-      const year = parseInt(document.getElementById("year").value);
+      const user = document.getElementById("modalUsername").value.trim();
+      if (!selectedAnime || !user) return;
 
-      const submitBtn = document.getElementById("submitBtn");
+      const submitBtn = document.getElementById("modalSubmitBtn");
       submitBtn.disabled = true;
-      submitBtn.innerText = "กำลังบันทึก...";
+      submitBtn.innerText = "กำลังบันทึกลง Cloud...";
 
       try {
         const { error } = await db.from('anime_ratings').insert([
-          { username: user, anime_name: anime, genre, release_year: year, rating: currentRating }
+          { 
+            username: user, 
+            anime_name: selectedAnime.title, 
+            genre: selectedAnime.genre, 
+            release_year: selectedAnime.release_year, 
+            rating: modalRatingVal 
+          }
         ]);
         if (error) throw error;
+
+        closeRatingModal();
 
         Swal.fire({
           icon: 'success',
           title: 'บันทึกสำเร็จ!',
-          html: `<p class="text-sm">บันทึก <b>${anime}</b> สำหรับคุณแล้ว</p>
-                 <p class="text-brand-orange font-bold mt-1">${'★'.repeat(currentRating)} (${currentRating}/5 ดาว)</p>`,
-          background: '#132238',
+          html: `<p class="text-xs">บันทึกคะแนนเรื่อง <b>${selectedAnime.title}</b> เรียบร้อย</p>
+                 <p class="text-brand-orange font-bold mt-1">${'★'.repeat(modalRatingVal)} (${modalRatingVal}/5 ดาว)</p>`,
+          background: '#0E1A2E',
           color: '#ffffff',
           confirmButtonColor: '#FF8A00'
         });
-
-        document.getElementById("animeSelect").selectedIndex = 0;
-        document.getElementById("genre").value = "";
-        document.getElementById("year").value = "";
-        setRating(5);
       } catch (err) {
         Swal.fire({
           icon: 'error',
-          title: 'บันทึกไม่สำเร็จ',
+          title: 'ไม่สำเร็จ',
           text: err.message,
-          background: '#132238',
+          background: '#0E1A2E',
           color: '#ffffff',
           confirmButtonColor: '#FF5400'
         });
@@ -291,79 +472,172 @@
       }
     }
 
-    // ระบบ Login ของ Admin พร้อมรหัสผ่าน
+    // ================= ADMIN FUNCTIONS =================
     async function promptAdminLogin() {
       const { value: password } = await Swal.fire({
-        title: 'ระบบจัดการผู้ดูแล (Admin)',
+        title: 'ระบบควบคุม Admin',
         input: 'password',
-        inputLabel: 'กรุณากรอกรหัสผ่าน Admin',
-        inputPlaceholder: 'ใส่รหัสผ่าน...',
+        inputLabel: 'ใส่รหัสผ่านผู้ดูแลระบบ',
+        inputPlaceholder: 'รหัสผ่าน (เริ่มต้น: 1234)',
         showCancelButton: true,
         cancelButtonText: 'ยกเลิก',
         confirmButtonText: 'เข้าสู่ระบบ',
         confirmButtonColor: '#FF8A00',
         cancelButtonColor: '#334155',
-        background: '#132238',
+        background: '#0E1A2E',
         color: '#ffffff'
       });
 
       if (password === ADMIN_PASSWORD) {
-        openAdminDashboard();
+        enterAdminDashboard();
       } else if (password) {
         Swal.fire({
           icon: 'error',
-          title: 'รหัสผ่านไม่ถูกต้อง',
-          text: 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้',
-          background: '#132238',
+          title: 'รหัสไม่ถูกต้อง',
+          text: 'คุณไม่มีสิทธิ์เข้าถึงระบบ Admin',
+          background: '#0E1A2E',
           color: '#ffffff',
           confirmButtonColor: '#FF5400'
         });
       }
     }
 
-    async function openAdminDashboard() {
-      document.getElementById("formSection").classList.add("hidden");
-      document.getElementById("adminDashboard").classList.remove("hidden");
-      await loadAdminStats();
+    async function enterAdminDashboard() {
+      document.getElementById("userCatalogSection").classList.add("hidden");
+      document.getElementById("adminDashboardSection").classList.remove("hidden");
+      await loadAdminDashboardData();
     }
 
-    function closeAdminDashboard() {
-      document.getElementById("adminDashboard").classList.add("hidden");
-      document.getElementById("formSection").classList.remove("hidden");
+    function exitAdminMode() {
+      document.getElementById("adminDashboardSection").classList.add("hidden");
+      document.getElementById("userCatalogSection").classList.remove("hidden");
     }
 
-    // โหลดข้อมูลสถิติ Admin Dashboard
-    async function loadAdminStats() {
-      const { data: ratings, error } = await db.from('anime_ratings').select('*');
+    function switchAdminTab(tabName) {
+      ['overview', 'users', 'ratings'].forEach(tab => {
+        document.getElementById(`tabContent-${tab}`).classList.add("hidden");
+        const btn = document.getElementById(`tabBtn-${tab}`);
+        btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2";
+      });
+
+      document.getElementById(`tabContent-${tabName}`).classList.remove("hidden");
+      const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+      activeBtn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition flex items-center gap-2";
+    }
+
+    async function loadAdminDashboardData() {
+      const { data: ratings, error } = await db.from('anime_ratings').select('*').order('created_at', { ascending: false });
       if (error || !ratings) return;
 
-      // คำนวณคนที่ตอบวันนี้
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const todayCount = ratings.filter(r => new Date(r.created_at) >= startOfDay).length;
-
+      // Stats
       const users = [...new Set(ratings.map(r => r.username))];
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const todayCount = ratings.filter(r => new Date(r.created_at) >= today).length;
+      
+      const sumRating = ratings.reduce((acc, r) => acc + parseFloat(r.rating), 0);
+      const avgRating = ratings.length ? (sumRating / ratings.length).toFixed(1) : "0.0";
 
-      document.getElementById("statToday").innerText = todayCount;
-      document.getElementById("statUsers").innerText = users.length;
-      document.getElementById("statRatings").innerText = ratings.length;
+      document.getElementById("dashTotalUsers").innerText = users.length;
+      document.getElementById("dashTotalRatings").innerText = ratings.length;
+      document.getElementById("dashTodayRatings").innerText = todayCount;
+      document.getElementById("dashGlobalAvg").innerText = `${avgRating} ★`;
 
-      // แสดง Badge รายชื่อ User
-      const container = document.getElementById("adminUserBadges");
-      container.innerHTML = users.map(u => `
-        <button onclick="inspectUser('${u}')" class="px-2.5 py-1 bg-[#080E1A] hover:bg-brand-blue hover:text-black border border-brand-blue/50 text-brand-blue rounded-lg text-xs font-bold transition">
+      // Render Charts
+      renderAdminCharts(ratings);
+
+      // Render User List for Tab 2
+      const userBadgeContainer = document.getElementById("adminUserBadges");
+      userBadgeContainer.innerHTML = users.map(u => `
+        <button onclick="inspectUserInAdmin('${escapeHtml(u)}')" 
+          class="px-3 py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 text-slate-200 rounded-xl text-xs font-bold transition">
           👤 ${u}
         </button>
       `).join('');
+
+      // Render Table in Tab 3
+      const tableBody = document.getElementById("adminRatingsTableBody");
+      tableBody.innerHTML = ratings.map(r => `
+        <tr class="hover:bg-slate-800/40 transition">
+          <td class="p-3 font-semibold text-brand-blue">${escapeHtml(r.username)}</td>
+          <td class="p-3 text-white">${escapeHtml(r.anime_name)}</td>
+          <td class="p-3 text-slate-400">${escapeHtml(r.genre)}</td>
+          <td class="p-3 text-slate-400">${r.release_year}</td>
+          <td class="p-3 text-right text-brand-orange font-bold">${'★'.repeat(r.rating)} (${r.rating})</td>
+        </tr>
+      `).join('');
     }
 
-    // คำนวณค่าเฉลี่ย r_bar
+    // วาดกราฟ Chart.js
+    function renderAdminCharts(ratings) {
+      // 1. Rating Distribution (1 - 5 ดาว)
+      const dist = [0, 0, 0, 0, 0];
+      ratings.forEach(r => {
+        const star = Math.min(Math.max(Math.round(r.rating), 1), 5);
+        dist[star - 1]++;
+      });
+
+      const ctxDist = document.getElementById('chartRatingDist').getContext('2d');
+      if (distChart) distChart.destroy();
+      distChart = new Chart(ctxDist, {
+        type: 'bar',
+        data: {
+          labels: ['1 ดาว', '2 ดาว', '3 ดาว', '4 ดาว', '5 ดาว'],
+          datasets: [{
+            label: 'จำนวนโหวต',
+            data: dist,
+            backgroundColor: ['#334155', '#475569', '#0284C7', '#00F0FF', '#FF8A00'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#94A3B8', stepSize: 1 }, grid: { color: '#1E293B' } },
+            x: { ticks: { color: '#94A3B8' }, grid: { display: false } }
+          }
+        }
+      });
+
+      // 2. Top 5 Most Rated Anime
+      const countMap = {};
+      ratings.forEach(r => {
+        countMap[r.anime_name] = (countMap[r.anime_name] || 0) + 1;
+      });
+
+      const top5 = Object.entries(countMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const ctxTop = document.getElementById('chartTopAnime').getContext('2d');
+      if (topChart) topChart.destroy();
+      topChart = new Chart(ctxTop, {
+        type: 'doughnut',
+        data: {
+          labels: top5.map(t => t[0].substring(0, 16) + '...'),
+          datasets: [{
+            data: top5.map(t => t[1]),
+            backgroundColor: ['#00F0FF', '#FF8A00', '#10B981', '#F59E0B', '#6366F1']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#94A3B8', boxWidth: 12, font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // ================= COLLABORATIVE FILTERING =================
     function computeRBar(ratings, user) {
-      const scores = ratings.filter(r => r.username === user).map(r => parseFloat(r.rating));
-      return scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      const userRatings = ratings.filter(r => r.username === user).map(r => parseFloat(r.rating));
+      return userRatings.length ? (userRatings.reduce((a, b) => a + b, 0) / userRatings.length) : 0;
     }
 
-    // คำนวณความคล้ายคลึง Sim(u1, u2)
     function computeSim(ratings, u1, u2) {
       const r_bar1 = computeRBar(ratings, u1);
       const r_bar2 = computeRBar(ratings, u2);
@@ -387,8 +661,7 @@
       return den === 0 ? 0 : num / den;
     }
 
-    // ดูรายละเอียดเจาะลึกของ User ในหน้า Admin
-    async function inspectUser(targetUser) {
+    async function inspectUserInAdmin(targetUser) {
       const { data: allRatings } = await db.from('anime_ratings').select('*');
       if (!allRatings) return;
 
@@ -396,75 +669,79 @@
       const r_bar = computeRBar(allRatings, targetUser).toFixed(2);
       const otherUsers = [...new Set(allRatings.map(r => r.username))].filter(u => u !== targetUser);
 
-      // คำนวณความเหมือน
       const similarities = otherUsers.map(u => ({
         user: u,
         sim: computeSim(allRatings, targetUser, u)
       })).sort((a, b) => b.sim - a.sim);
 
-      // เรื่องที่แนะนำ (จากคนที่มี Sim สูง และให้คะแนน >= 4 ดาวขึ้นไป)
       const seen = userRatings.map(r => r.anime_name);
       const suggestions = allRatings
         .filter(r => r.username !== targetUser && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4)
         .map(r => r.anime_name);
       const uniqueSuggestions = [...new Set(suggestions)];
 
-      document.getElementById("adminUserDetail").innerHTML = `
-        <div class="space-y-3">
-          <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+      document.getElementById("adminUserMatrixBox").innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
             <div>
-              <span class="text-sm font-bold text-brand-blue">${targetUser}</span>
-              <span class="text-[10px] text-slate-400 block">ตอบทั้งหมด: ${userRatings.length} เรื่อง</span>
+              <span class="text-sm font-black text-brand-blue">วิเคราะห์เปรียบเทียบ: ${targetUser}</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">ตอบแล้ว ${userRatings.length} เรื่อง</span>
             </div>
-            <span class="text-xs bg-slate-800 text-brand-orange px-2 py-1 rounded font-bold">
-              r̄ เฉลี่ย: ${r_bar} ★
+            <span class="px-2.5 py-1 bg-slate-800 text-brand-orange rounded-xl font-bold border border-slate-700">
+              r̄ เฉลี่ย = ${r_bar} ★
             </span>
           </div>
 
-          <div>
-            <p class="text-[11px] text-slate-300 font-bold mb-1">ประวัติเรื่องที่เคยให้คะแนน:</p>
-            <div class="max-h-24 overflow-y-auto space-y-1 pr-1">
-              ${userRatings.map(r => `
-                <div class="flex justify-between items-center text-[10px] bg-[#132238] px-2 py-1 rounded border border-slate-800">
-                  <span class="truncate max-w-[200px]">${r.anime_name}</span>
-                  <span class="text-brand-orange font-bold">${'★'.repeat(r.rating)}</span>
-                </div>
-              `).join('')}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h5 class="text-[11px] font-bold text-slate-300 mb-1.5">ประวัติเรื่องที่ ${targetUser} ให้คะแนน:</h5>
+              <div class="max-h-36 overflow-y-auto space-y-1 pr-1">
+                ${userRatings.map(r => `
+                  <div class="flex justify-between items-center bg-[#070D18] px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px]">
+                    <span class="truncate max-w-[180px] text-slate-200">${r.anime_name}</span>
+                    <span class="text-brand-orange font-bold">${'★'.repeat(r.rating)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div>
+              <h5 class="text-[11px] font-bold text-slate-300 mb-1.5">ความเหมือนกับ User อื่น Sim(target, x):</h5>
+              <div class="max-h-36 overflow-y-auto space-y-1 pr-1">
+                ${similarities.length ? similarities.map(s => `
+                  <div class="flex justify-between items-center bg-[#070D18] px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px]">
+                    <span class="text-slate-300">vs ${s.user}</span>
+                    <span class="${s.sim > 0.3 ? 'text-green-400 font-bold' : (s.sim < 0 ? 'text-rose-400' : 'text-slate-400')}">
+                      Sim: ${s.sim.toFixed(3)}
+                    </span>
+                  </div>
+                `).join('') : '<span class="text-slate-500 text-[11px]">ไม่มี User อื่นในระบบ</span>'}
+              </div>
             </div>
           </div>
 
-          <div class="border-t border-slate-800 pt-2">
-            <p class="text-[11px] text-slate-300 font-bold mb-1">ความเหมือนกับ User อื่น (Sim):</p>
-            <div class="space-y-0.5 text-[10px]">
-              ${similarities.length ? similarities.slice(0, 3).map(s => `
-                <div class="flex justify-between">
-                  <span class="text-slate-400">vs ${s.user}</span>
-                  <span class="${s.sim > 0.3 ? 'text-green-400 font-bold' : 'text-slate-400'}">Sim: ${s.sim.toFixed(3)}</span>
-                </div>
-              `).join('') : '<span class="text-slate-500">ไม่มีคู่เทียบ</span>'}
+          <div class="border-t border-slate-800 pt-3">
+            <h5 class="text-[11px] font-bold text-brand-orange mb-1">💡 เรื่องที่คาดว่า ${targetUser} น่าจะชอบ (จากคนที่มี Sim สูง):</h5>
+            <div class="p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-200">
+              ${uniqueSuggestions.length ? uniqueSuggestions.join(" • ") : "ยังไม่มีเรื่องแนะนำเพิ่มเติมในขณะนี้"}
             </div>
-          </div>
-
-          <div class="border-t border-slate-800 pt-2">
-            <p class="text-[11px] text-brand-orange font-bold mb-0.5">💡 อนิเมะที่ระบบคาดว่าจะชอบ:</p>
-            <p class="text-slate-200 text-xs">${uniqueSuggestions.length ? uniqueSuggestions.join(", ") : 'ยังไม่มีข้อมูลเพียงพอ'}</p>
           </div>
         </div>
       `;
     }
 
-    // Modal สำหรับ User ทั่วไป (ดูเรื่องแนะนำของตัวเองโดยไม่ต้องใช้รหัส)
+    // Modal แนะนำสำหรับ User ทั่วไป
     async function openUserRecommendationModal() {
       const { value: targetUser } = await Swal.fire({
-        title: 'ดูคำแนะนำสำหรับคุณ',
+        title: 'ค้นหาอนิเมะแนะนำสำหรับคุณ',
         input: 'text',
-        inputLabel: 'ใส่ชื่อบัญชี / Username ของคุณ',
-        inputPlaceholder: 'เช่น Thanadun_P',
-        confirmButtonText: 'วิเคราะห์ผล',
+        inputLabel: 'พิมพ์ชื่อบัญชี / Username ของคุณ',
+        inputPlaceholder: 'เช่น Thanadun',
+        confirmButtonText: 'วิเคราะห์ผลลัพธ์',
         confirmButtonColor: '#00F0FF',
         showCancelButton: true,
         cancelButtonText: 'ยกเลิก',
-        background: '#132238',
+        background: '#0E1A2E',
         color: '#ffffff'
       });
 
@@ -476,9 +753,9 @@
       if (userRatings.length === 0) {
         Swal.fire({
           icon: 'info',
-          title: 'ไม่พบข้อมูล',
-          text: `ยังไม่มีประวัติการให้คะแนนของ "${targetUser}" กรุณาให้คะแนนอย่างน้อย 1 เรื่องก่อน`,
-          background: '#132238',
+          title: 'ไม่พบประวัติ',
+          text: `ยังไม่มีประวัติการให้คะแนนของ "${targetUser}" กรุณาแตะเลือกโปสเตอร์เพื่อโหวตอย่างน้อย 1 เรื่อง`,
+          background: '#0E1A2E',
           color: '#ffffff',
           confirmButtonColor: '#FF8A00'
         });
@@ -496,19 +773,24 @@
         title: `คำแนะนำสำหรับ ${targetUser}`,
         html: `
           <div class="text-left text-xs space-y-2 mt-2">
-            <p class="text-slate-300">คุณเคยให้คะแนนไปแล้วทั้งหมด: <b class="text-brand-blue">${userRatings.length} เรื่อง</b></p>
+            <p class="text-slate-300">คุณโหวตไปแล้วทั้งหมด: <b class="text-brand-blue">${userRatings.length} เรื่อง</b></p>
             <div class="border-t border-slate-700 pt-2">
-              <span class="font-bold text-brand-orange block mb-1">✨ เรื่องที่คอเดียวกันแนะนำให้คุณดู:</span>
-              <p class="text-white bg-[#080E1A] p-2.5 rounded-xl border border-slate-800 leading-relaxed">
-                ${uniqueSuggestions.length ? uniqueSuggestions.join("<br>• ") : "ให้คะแนนเพิ่มอีกนิดเพื่อให้ระบบหาคู่เหมือนได้แม่นยำขึ้น!"}
-              </p>
+              <span class="font-bold text-brand-orange block mb-1">✨ เรื่องที่คนรสนิยมคล้ายกันแนะนำ:</span>
+              <div class="text-white bg-[#070D18] p-3 rounded-xl border border-slate-800 leading-relaxed max-h-48 overflow-y-auto">
+                ${uniqueSuggestions.length ? uniqueSuggestions.map(s => `• <b>${s}</b>`).join("<br>") : "โหวตเพิ่มอีกสักนิด เพื่อให้ระบบจับคู่ความชอบได้แม่นยำขึ้น!"}
+              </div>
             </div>
           </div>
         `,
-        background: '#132238',
+        background: '#0E1A2E',
         color: '#ffffff',
         confirmButtonColor: '#00F0FF'
       });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
   </script>
 </body>
