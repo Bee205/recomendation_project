@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Anime Matrix | Netflix Style</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍿</text></svg>">
+  <title>Anime Matrix</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Chart.js สำหรับกราฟแดชบอร์ด -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
@@ -20,13 +16,7 @@
       theme: {
         extend: {
           colors: {
-            netflix: {
-              red: '#E50914',
-              dark: '#141414',
-              gray: '#808080',
-              lightGray: '#e5e5e5',
-              modal: '#181818'
-            }
+            netflix: { red: '#E50914', dark: '#141414', gray: '#808080', lightGray: '#e5e5e5', modal: '#181818' }
           }
         }
       }
@@ -34,162 +24,100 @@
   </script>
   <style>
     body { background-color: #141414; }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #141414; }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #E50914; }
 
-    .star-btn {
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease-in-out;
-      text-shadow: 0 0 5px rgba(0,0,0,0.8);
-    }
-    .star-btn:hover, .star-btn:active { transform: scale(1.3); }
+    .star-btn { transition: transform 0.15s ease, color 0.15s ease; text-shadow: 0 0 3px rgba(0,0,0,0.8); }
+    .star-btn:hover, .star-btn:active { transform: scale(1.25); }
     .star-active { color: #E50914; }
     .star-inactive { color: #333333; }
 
-    /* Netflix Poster Hover Effect */
-    .poster-card {
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-      transform-origin: center center;
-    }
-    .poster-card:hover {
-      transform: scale(1.08);
-      z-index: 20;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-    }
+    .poster-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .poster-card:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
   </style>
 </head>
 <body class="text-netflix-lightGray min-h-screen font-sans flex flex-col justify-between selection:bg-netflix-red selection:text-white">
 
-  <!-- ================= TOP NAVBAR (Netflix Style) ================= -->
-  <nav class="sticky top-0 z-40 bg-gradient-to-b from-black/90 to-netflix-dark/40 backdrop-blur-sm px-4 md:px-8 py-4 flex justify-between items-center transition-all duration-300">
-    <div class="flex items-center gap-6">
-      <!-- Logo -->
-      <h1 class="text-2xl md:text-3xl font-black text-netflix-red tracking-tighter uppercase cursor-pointer hover:opacity-80 transition">
-        Matrix
-      </h1>
-      <!-- Desktop Menu (Hidden on mobile) -->
-      <div class="hidden md:flex gap-4 text-sm font-semibold text-netflix-lightGray/80">
-        <a href="#" class="text-white font-bold">หน้าแรก</a>
-        <a href="#" class="hover:text-white transition">ซีรีส์</a>
-        <a href="#" class="hover:text-white transition">ภาพยนตร์</a>
-        <a href="#" class="hover:text-white transition">รายการของฉัน</a>
-      </div>
-    </div>
+  <!-- ================= TOP NAVBAR ================= -->
+  <nav class="sticky top-0 z-40 bg-gradient-to-b from-black/90 to-netflix-dark/40 backdrop-blur-sm px-6 md:px-[100px] py-3 flex justify-between items-center">
+    <h1 class="text-xl md:text-2xl font-black text-netflix-red tracking-tighter uppercase cursor-pointer">
+      Anime Matrix
+    </h1>
     
-    <div class="flex items-center gap-4">
-      <!-- Recommendation Button -->
-      <button onclick="openUserRecommendationModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded text-white hover:text-netflix-lightGray transition group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white group-hover:scale-110 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
-        <span class="hidden md:inline">แนะนำสำหรับฉัน</span>
+    <div class="flex items-center gap-3">
+      <button onclick="openUserRecommendationModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded text-white hover:text-netflix-lightGray transition bg-white/10 hover:bg-white/20">
+        💡 <span class="hidden md:inline">แนะนำสำหรับฉัน</span>
       </button>
-      
-      <!-- Admin Button -->
-      <button onclick="promptAdminLogin()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded text-white hover:text-netflix-lightGray transition group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white group-hover:scale-110 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-        <span class="hidden md:inline">แอดมิน</span>
+      <button onclick="promptAdminLogin()" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded text-white hover:text-netflix-lightGray transition bg-netflix-red/90 hover:bg-netflix-red">
+        🔑 <span class="hidden md:inline">แอดมิน</span>
       </button>
-
-      <!-- User Avatar -->
-      <div class="w-8 h-8 rounded bg-blue-600 cursor-pointer border border-transparent hover:border-white transition overflow-hidden">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" alt="Avatar" class="w-full h-full object-cover">
-      </div>
     </div>
   </nav>
 
   <!-- ================= USER VIEW: POSTER GRID ================= -->
-  <section id="userCatalogSection" class="flex-grow w-full px-4 md:px-8 py-6">
-    
-    <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+  <section id="userCatalogSection" class="flex-grow w-full max-w-[1600px] mx-auto px-6 md:px-[100px] py-6">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-4 gap-3">
       <div>
-        <h2 class="text-xl md:text-2xl font-bold text-white mb-1">ยอดฮิตในเมทริกซ์</h2>
-        <p class="text-sm text-netflix-gray">แตะที่โปสเตอร์เพื่อโหวตคะแนนและรับคำแนะนำที่ตรงใจคุณ</p>
+        <h2 class="text-lg md:text-xl font-bold text-white mb-0.5">อนิเมะยอดฮิต</h2>
+        <p class="text-xs text-netflix-gray">แตะที่โปสเตอร์เพื่อโหวตคะแนน</p>
       </div>
-      
-      <!-- Search Box (Netflix Style) -->
-      <div class="relative w-full md:w-64 group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="ชื่อเรื่อง, แนว..." 
-          class="w-full bg-black/50 border border-white/20 rounded px-9 py-1.5 text-sm text-white placeholder-netflix-gray focus:outline-none focus:border-white transition duration-300 focus:bg-black" />
+      <div class="relative w-full md:w-56 group">
+        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหาชื่อเรื่อง..." 
+          class="w-full bg-black/50 border border-white/20 rounded px-3 py-1.5 text-xs text-white placeholder-netflix-gray focus:outline-none focus:border-white transition" />
       </div>
     </div>
 
-    <!-- Anime Grid Container (Tight Grid) -->
-    <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2 gap-y-10">
-      <!-- Skeleton Loading -->
-      <div class="col-span-full py-20 text-center text-netflix-gray text-sm">
-        <div class="animate-pulse flex flex-col items-center gap-3">
-          <div class="w-8 h-8 border-4 border-netflix-red border-t-transparent rounded-full animate-spin"></div>
-          กำลังโหลดเนื้อหา...
-        </div>
-      </div>
+    <div id="animeGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+      <div class="col-span-full py-16 text-center text-netflix-gray text-xs">⏳ กำลังโหลด...</div>
     </div>
   </section>
 
-  <!-- ================= RATING MODAL (NETFLIX PREVIEW POPUP) ================= -->
-  <div id="ratingModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 md:p-0 overflow-y-auto">
-    <div class="bg-netflix-modal w-full max-w-2xl rounded-xl shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden my-8">
+  <!-- ================= RATING MODAL ================= -->
+  <div id="ratingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-netflix-modal w-full max-w-lg rounded-lg shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden">
       
-      <!-- Close Button -->
-      <button onclick="closeRatingModal()" class="absolute top-4 right-4 z-10 bg-[#181818] rounded-full w-9 h-9 flex items-center justify-center text-white hover:bg-white hover:text-black transition shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+      <button onclick="closeRatingModal()" class="absolute top-3 right-3 z-10 bg-black/60 rounded-full w-7 h-7 flex items-center justify-center text-white hover:bg-white hover:text-black transition text-xs">
+        ✕
       </button>
 
-      <!-- Hero Banner (Poster Image as Cover) -->
-      <div class="relative w-full h-64 md:h-80 bg-black">
-        <img id="modalPosterImg" src="" alt="Cover" class="w-full h-full object-cover opacity-80">
-        <!-- Netflix Bottom Fade Gradient -->
-        <div class="absolute inset-0 bg-gradient-to-t from-netflix-modal via-netflix-modal/30 to-transparent"></div>
-        
-        <!-- Title Overlay -->
-        <div class="absolute bottom-4 left-6 right-6">
-          <h3 id="modalAnimeTitle" class="text-3xl md:text-4xl font-black text-white drop-shadow-lg leading-tight mb-2">Anime Name</h3>
-          <div class="flex items-center gap-3 text-sm font-semibold">
+      <div class="relative w-full h-48 bg-black">
+        <img id="modalPosterImg" src="" alt="Cover" class="w-full h-full object-cover opacity-70">
+        <div class="absolute inset-0 bg-gradient-to-t from-netflix-modal via-netflix-modal/40 to-transparent"></div>
+        <div class="absolute bottom-3 left-5 right-5">
+          <h3 id="modalAnimeTitle" class="text-xl md:text-2xl font-black text-white leading-tight mb-1">Anime Name</h3>
+          <div class="flex items-center gap-2 text-[11px] font-semibold">
             <span class="text-green-500">แนะนำ 98%</span>
             <span id="modalAnimeYear" class="text-white">2024</span>
-            <span class="border border-white/40 px-1.5 rounded text-[10px] text-white">HD</span>
           </div>
-          <p id="modalAnimeGenre" class="text-netflix-lightGray text-sm mt-1">Genre</p>
+          <p id="modalAnimeGenre" class="text-netflix-gray text-[11px] mt-0.5">Genre</p>
         </div>
       </div>
 
-      <!-- Form Section -->
-      <div class="p-6">
-        <form onsubmit="submitModalRating(event)" class="space-y-5">
+      <div class="p-5">
+        <form onsubmit="submitModalRating(event)" class="space-y-4">
           <div>
-            <label class="block text-sm font-bold text-white mb-2">โปรไฟล์ของคุณ (Username)</label>
-            <input type="text" id="modalUsername" required placeholder="เช่น Thanadun" 
-              class="w-full text-sm px-4 py-3 bg-[#333333] rounded focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-netflix-gray transition" />
+            <label class="block text-xs font-bold text-white mb-1.5">ชื่อบัญชีของคุณ:</label>
+            <input type="text" id="modalUsername" required placeholder="เช่น Saber" 
+              class="w-full text-xs px-3 py-2 bg-[#333333] rounded focus:outline-none focus:ring-1 focus:ring-white text-white placeholder-netflix-gray" />
           </div>
 
-          <!-- Star Rating -->
           <div>
-            <div class="flex justify-between items-end mb-2">
-              <label class="block text-sm font-bold text-white">คุณชอบเรื่องนี้แค่ไหน?</label>
-              <span id="modalStarLabel" class="text-sm font-bold text-netflix-red">5 ดาว</span>
+            <div class="flex justify-between items-end mb-1">
+              <label class="block text-xs font-bold text-white">ความชอบของคุณ:</label>
+              <span id="modalStarLabel" class="text-xs font-bold text-netflix-red">5 ดาว</span>
             </div>
-            <div class="bg-[#2b2b2b] p-4 rounded-lg flex justify-center gap-4">
-              <button type="button" onclick="setModalRating(1)" class="star-btn text-4xl star-active">★</button>
-              <button type="button" onclick="setModalRating(2)" class="star-btn text-4xl star-active">★</button>
-              <button type="button" onclick="setModalRating(3)" class="star-btn text-4xl star-active">★</button>
-              <button type="button" onclick="setModalRating(4)" class="star-btn text-4xl star-active">★</button>
-              <button type="button" onclick="setModalRating(5)" class="star-btn text-4xl star-active">★</button>
+            <div class="bg-[#2b2b2b] p-3 rounded flex justify-center gap-3">
+              <button type="button" onclick="setModalRating(1)" class="star-btn text-2xl star-active">★</button>
+              <button type="button" onclick="setModalRating(2)" class="star-btn text-2xl star-active">★</button>
+              <button type="button" onclick="setModalRating(3)" class="star-btn text-2xl star-active">★</button>
+              <button type="button" onclick="setModalRating(4)" class="star-btn text-2xl star-active">★</button>
+              <button type="button" onclick="setModalRating(5)" class="star-btn text-2xl star-active">★</button>
             </div>
           </div>
 
-          <button type="submit" id="modalSubmitBtn" class="w-full py-3.5 bg-white text-black font-bold text-base rounded hover:bg-netflix-lightGray transition flex justify-center items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
+          <button type="submit" id="modalSubmitBtn" class="w-full py-2.5 bg-white text-black font-bold text-sm rounded hover:bg-netflix-lightGray transition">
             บันทึกคะแนน
           </button>
         </form>
@@ -197,97 +125,60 @@
     </div>
   </div>
 
-  <!-- ================= ADMIN DASHBOARD (SIDEBAR + CHARTS + MATRIX) ================= -->
-  <!-- โค้ดส่วน Admin ยังคงฟังก์ชันเดิม แต่ปรับโทนสีให้เข้ากับ Netflix Theme -->
-  <section id="adminDashboardSection" class="hidden flex-grow flex-col md:flex-row w-full px-4 md:px-8 py-6 gap-6">
-    <!-- LEFT SIDEBAR -->
-    <aside class="w-full md:w-64 shrink-0 space-y-6">
-      <div>
-        <h3 class="text-2xl font-black text-white mb-4">Admin Panel</h3>
-        <nav class="space-y-1.5 text-sm">
-          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full text-left px-4 py-3 rounded bg-netflix-red text-white font-bold transition">
-            ภาพรวมสถิติ
-          </button>
-          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full text-left px-4 py-3 rounded text-netflix-lightGray hover:bg-[#333] font-semibold transition">
-            วิเคราะห์ผู้ใช้ (Matrix)
-          </button>
-          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full text-left px-4 py-3 rounded text-netflix-lightGray hover:bg-[#333] font-semibold transition">
-            ประวัติการให้คะแนน
-          </button>
-        </nav>
-      </div>
-      <button onclick="exitAdminMode()" class="w-full py-2.5 rounded border border-netflix-gray text-netflix-gray hover:text-white hover:border-white font-bold transition">
-        ออกจากโหมดแอดมิน
-      </button>
+  <!-- ================= ADMIN DASHBOARD ================= -->
+  <section id="adminDashboardSection" class="hidden flex-grow flex-col md:flex-row w-full max-w-[1600px] mx-auto px-6 md:px-[100px] py-6 gap-4">
+    <aside class="w-full md:w-56 shrink-0 space-y-4">
+      <h3 class="text-xl font-black text-white">Admin Panel</h3>
+      <nav class="space-y-1 text-xs">
+        <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full text-left px-3 py-2.5 rounded bg-netflix-red text-white font-bold">ภาพรวมสถิติ</button>
+        <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full text-left px-3 py-2.5 rounded text-netflix-lightGray hover:bg-[#333] font-semibold">วิเคราะห์ผู้ใช้</button>
+        <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full text-left px-3 py-2.5 rounded text-netflix-lightGray hover:bg-[#333] font-semibold">ตารางคะแนน</button>
+      </nav>
+      <button onclick="exitAdminMode()" class="w-full py-2 rounded border border-netflix-gray text-netflix-gray hover:text-white hover:border-white font-bold text-xs transition">ออกจากโหมดแอดมิน</button>
     </aside>
 
-    <!-- MAIN DASHBOARD CONTENT -->
-    <div class="flex-grow bg-[#181818] rounded-xl p-6 shadow-xl border border-[#333]">
-      
-      <!-- TAB 1: OVERVIEW & GRAPHS -->
-      <div id="tabContent-overview" class="space-y-6">
-        <!-- Metric Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-[#2b2b2b] p-4 rounded text-center">
-            <span class="text-xs text-netflix-gray uppercase font-bold">ผู้ใช้งานทั้งหมด</span>
-            <span id="dashTotalUsers" class="block text-2xl font-black text-white mt-1">0</span>
+    <div class="flex-grow bg-[#181818] rounded-lg p-5 shadow-xl border border-[#333]">
+      <div id="tabContent-overview" class="space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-[#2b2b2b] p-3 rounded text-center">
+            <span class="text-[10px] text-netflix-gray uppercase font-bold">ผู้ใช้ทั้งหมด</span>
+            <span id="dashTotalUsers" class="block text-xl font-black text-white mt-0.5">0</span>
           </div>
-          <div class="bg-[#2b2b2b] p-4 rounded text-center">
-            <span class="text-xs text-netflix-gray uppercase font-bold">คะแนนทั้งหมด</span>
-            <span id="dashTotalRatings" class="block text-2xl font-black text-netflix-red mt-1">0</span>
+          <div class="bg-[#2b2b2b] p-3 rounded text-center">
+            <span class="text-[10px] text-netflix-gray uppercase font-bold">คะแนนรวม</span>
+            <span id="dashTotalRatings" class="block text-xl font-black text-netflix-red mt-0.5">0</span>
           </div>
-          <div class="bg-[#2b2b2b] p-4 rounded text-center">
-            <span class="text-xs text-netflix-gray uppercase font-bold">ตอบวันนี้</span>
-            <span id="dashTodayRatings" class="block text-2xl font-black text-white mt-1">0</span>
+          <div class="bg-[#2b2b2b] p-3 rounded text-center">
+            <span class="text-[10px] text-netflix-gray uppercase font-bold">ตอบวันนี้</span>
+            <span id="dashTodayRatings" class="block text-xl font-black text-white mt-0.5">0</span>
           </div>
-          <div class="bg-[#2b2b2b] p-4 rounded text-center">
-            <span class="text-xs text-netflix-gray uppercase font-bold">เรตติ้งเฉลี่ย</span>
-            <span id="dashGlobalAvg" class="block text-2xl font-black text-yellow-500 mt-1">0.0</span>
+          <div class="bg-[#2b2b2b] p-3 rounded text-center">
+            <span class="text-[10px] text-netflix-gray uppercase font-bold">เรตติ้งเฉลี่ย</span>
+            <span id="dashGlobalAvg" class="block text-xl font-black text-yellow-500 mt-0.5">0.0</span>
           </div>
         </div>
-
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-[#2b2b2b] p-5 rounded">
-            <h4 class="text-sm font-bold text-white mb-4">การกระจายตัวของคะแนนโหวต</h4>
-            <div class="h-64"><canvas id="chartRatingDist"></canvas></div>
-          </div>
-          <div class="bg-[#2b2b2b] p-5 rounded">
-            <h4 class="text-sm font-bold text-white mb-4">5 อันดับยอดฮิต</h4>
-            <div class="h-64"><canvas id="chartTopAnime"></canvas></div>
-          </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-[#2b2b2b] p-4 rounded"><h4 class="text-xs font-bold text-white mb-2">กระจายตัวคะแนน</h4><div class="h-48"><canvas id="chartRatingDist"></canvas></div></div>
+          <div class="bg-[#2b2b2b] p-4 rounded"><h4 class="text-xs font-bold text-white mb-2">5 อันดับฮิต</h4><div class="h-48"><canvas id="chartTopAnime"></canvas></div></div>
         </div>
       </div>
 
-      <!-- TAB 2: USER MATRIX -->
-      <div id="tabContent-users" class="hidden space-y-5">
+      <div id="tabContent-users" class="hidden space-y-4">
         <div>
-          <label class="text-sm text-white font-bold block mb-3">เลือกโปรไฟล์ผู้ใช้เพื่อคำนวณอัลกอริทึม:</label>
-          <div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-[#2b2b2b] rounded">
-            <span class="text-sm text-netflix-gray">กำลังโหลด...</span>
-          </div>
+          <label class="text-xs text-white font-bold block mb-2">เลือกโปรไฟล์ผู้ใช้:</label>
+          <div id="adminUserBadges" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-[#2b2b2b] rounded"></div>
         </div>
-        <div id="adminUserMatrixBox" class="bg-[#2b2b2b] p-6 rounded text-sm text-netflix-gray text-center">
-          คลิกเลือกโปรไฟล์ด้านบนเพื่อดูการคำนวณ Cosine Similarity
-        </div>
+        <div id="adminUserMatrixBox" class="bg-[#2b2b2b] p-4 rounded text-xs text-netflix-gray text-center">คลิกเลือกโปรไฟล์ด้านบน</div>
       </div>
 
-      <!-- TAB 3: TABLE -->
-      <div id="tabContent-ratings" class="hidden space-y-4">
-        <h4 class="text-sm font-bold text-white">ตารางข้อมูลดิบ (Raw Data)</h4>
-        <div class="overflow-x-auto rounded bg-[#2b2b2b] max-h-[500px]">
-          <table class="w-full text-left text-sm text-netflix-lightGray">
-            <thead class="bg-[#141414] text-white uppercase text-xs sticky top-0">
-              <tr>
-                <th class="p-4">User</th>
-                <th class="p-4">เรื่อง</th>
-                <th class="p-4">ปี</th>
-                <th class="p-4 text-right">คะแนน</th>
-              </tr>
+      <div id="tabContent-ratings" class="hidden space-y-3">
+        <h4 class="text-xs font-bold text-white">ตารางข้อมูลดิบ</h4>
+        <div class="overflow-x-auto rounded bg-[#2b2b2b] max-h-[400px]">
+          <table class="w-full text-left text-xs text-netflix-lightGray">
+            <thead class="bg-[#141414] text-white uppercase text-[10px] sticky top-0">
+              <tr><th class="p-3">User</th><th class="p-3">เรื่อง</th><th class="p-3">ปี</th><th class="p-3 text-right">คะแนน</th></tr>
             </thead>
-            <tbody id="adminRatingsTableBody" class="divide-y divide-[#333]">
-              <tr><td colspan="4" class="p-6 text-center text-netflix-gray">กำลังโหลดข้อมูล...</td></tr>
-            </tbody>
+            <tbody id="adminRatingsTableBody" class="divide-y divide-[#333]"></tbody>
           </table>
         </div>
       </div>
@@ -304,53 +195,32 @@
     let animeMasterList = [];
     let selectedAnime = null;
     let modalRatingVal = 5;
-    let distChart = null;
-    let topChart = null;
-
-    const posterPool = [
-      "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1569701814238-d65492d5c317?w=500&auto=format&fit=crop&q=80"
-    ];
+    let distChart = null, topChart = null;
+    const posterPool = ["https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80"];
 
     fetchAnimeCatalog();
 
     async function fetchAnimeCatalog() {
       const grid = document.getElementById("animeGrid");
       try {
-        const { data, error } = await db
-          .from('animes')
-          .select('id, title, genre, release_year, image_url')
-          .order('title', { ascending: true });
-
+        const { data, error } = await db.from('animes').select('id, title, genre, release_year, image_url').order('title', { ascending: true });
         if (error) throw error;
         animeMasterList = data || [];
-        if (animeMasterList.length === 0) {
-          grid.innerHTML = `<div class="col-span-full py-12 text-center text-netflix-gray">ไม่มีเนื้อหาในระบบ</div>`;
-          return;
-        }
+        if (!animeMasterList.length) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-netflix-gray">ไม่มีเนื้อหาในระบบ</div>`; return; }
         renderGrid(animeMasterList);
-      } catch (err) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-netflix-red">โหลดข้อมูลล้มเหลว</div>`;
-      }
+      } catch (err) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-netflix-red">โหลดข้อมูลล้มเหลว</div>`; }
     }
 
-    // เรนเดอร์การ์ดโปสเตอร์สไตล์ Netflix (ไม่มีกรอบ, มนเล็กน้อย)
     function renderGrid(list) {
-      const grid = document.getElementById("animeGrid");
-      grid.innerHTML = list.map((anime, index) => {
-        const posterUrl = anime.image_url || posterPool[index % posterPool.length];
+      document.getElementById("animeGrid").innerHTML = list.map((anime, index) => {
+        const posterUrl = anime.image_url || posterPool[0];
         return `
           <div onclick="openRatingModal('${escapeHtml(anime.title)}')" class="poster-card relative cursor-pointer rounded overflow-hidden bg-[#2b2b2b] group">
             <div class="relative w-full aspect-[2/3]">
               <img src="${posterUrl}" alt="${anime.title}" loading="lazy" class="w-full h-full object-cover">
-              
-              <!-- Netflix Hover Overlay -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                <h4 class="text-white font-bold text-sm leading-tight drop-shadow-md">${anime.title}</h4>
-                <div class="flex items-center gap-2 mt-1.5 text-[10px] font-bold">
-                  <span class="text-green-500">แนะนำ</span>
-                  <span class="text-white">${anime.release_year}</span>
-                </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-2.5">
+                <h4 class="text-white font-bold text-[10px] leading-tight drop-shadow-md line-clamp-2">${anime.title}</h4>
+                <span class="text-white text-[9px] mt-0.5">${anime.release_year}</span>
               </div>
             </div>
           </div>
@@ -360,44 +230,27 @@
 
     function filterAnimeGrid() {
       const q = document.getElementById("searchInput").value.toLowerCase().trim();
-      const filtered = animeMasterList.filter(a => 
-        a.title.toLowerCase().includes(q) || a.genre.toLowerCase().includes(q)
-      );
-      renderGrid(filtered);
+      renderGrid(animeMasterList.filter(a => a.title.toLowerCase().includes(q) || a.genre.toLowerCase().includes(q)));
     }
 
-    // Modal Rating Handlers
     function openRatingModal(title) {
       selectedAnime = animeMasterList.find(a => a.title === title);
       if (!selectedAnime) return;
-
       document.getElementById("modalAnimeTitle").innerText = selectedAnime.title;
       document.getElementById("modalAnimeYear").innerText = selectedAnime.release_year;
       document.getElementById("modalAnimeGenre").innerText = selectedAnime.genre;
-      
-      const idx = animeMasterList.findIndex(a => a.title === title);
-      document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[idx % posterPool.length];
-
+      document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[0];
       setModalRating(5);
       document.getElementById("ratingModal").classList.remove("hidden");
     }
 
-    function closeRatingModal() {
-      document.getElementById("ratingModal").classList.add("hidden");
-    }
+    function closeRatingModal() { document.getElementById("ratingModal").classList.add("hidden"); }
 
     function setModalRating(val) {
       modalRatingVal = val;
       document.getElementById("modalStarLabel").innerText = `${val} ดาว`;
-      const buttons = document.querySelectorAll("#ratingModal .star-btn");
-      buttons.forEach((btn, idx) => {
-        if (idx < val) {
-          btn.classList.add("star-active");
-          btn.classList.remove("star-inactive");
-        } else {
-          btn.classList.remove("star-active");
-          btn.classList.add("star-inactive");
-        }
+      document.querySelectorAll("#ratingModal .star-btn").forEach((btn, idx) => {
+        btn.className = `star-btn text-2xl ${idx < val ? 'star-active' : 'star-inactive'}`;
       });
     }
 
@@ -405,62 +258,26 @@
       e.preventDefault();
       const user = document.getElementById("modalUsername").value.trim();
       if (!selectedAnime || !user) return;
-
-      const submitBtn = document.getElementById("modalSubmitBtn");
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = "กำลังบันทึก...";
-
+      const btn = document.getElementById("modalSubmitBtn");
+      btn.disabled = true; btn.innerHTML = "กำลังบันทึก...";
       try {
-        const { error } = await db.from('anime_ratings').insert([
-          { username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal }
-        ]);
+        const { error } = await db.from('anime_ratings').insert([{ username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal }]);
         if (error) throw error;
-
         closeRatingModal();
-        Swal.fire({
-          icon: 'success',
-          title: 'บันทึกสำเร็จ',
-          text: `โหวต ${modalRatingVal} ดาวให้เรื่อง ${selectedAnime.title} แล้ว`,
-          background: '#181818', color: '#fff', confirmButtonColor: '#E50914'
-        });
-      } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: err.message,
-          background: '#181818', color: '#fff', confirmButtonColor: '#E50914'
-        });
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `บันทึกคะแนน`;
-      }
+        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: `โหวตเรื่อง ${selectedAnime.title} แล้ว`, background: '#181818', color: '#fff', confirmButtonColor: '#E50914' });
+      } catch (err) { Swal.fire({ icon: 'error', text: err.message, background: '#181818', color: '#fff' }); } 
+      finally { btn.disabled = false; btn.innerHTML = "บันทึกคะแนน"; }
     }
 
     // ================= ADMIN FUNCTIONS =================
     async function promptAdminLogin() {
-      const { value: password } = await Swal.fire({
-        title: 'ผู้ดูแลระบบ',
-        input: 'password',
-        inputPlaceholder: 'รหัสผ่าน',
-        showCancelButton: true,
-        confirmButtonText: 'เข้าสู่ระบบ',
-        cancelButtonText: 'ยกเลิก',
-        confirmButtonColor: '#E50914',
-        cancelButtonColor: '#333',
-        background: '#181818', color: '#fff'
-      });
-      if (password === ADMIN_PASSWORD) {
-        enterAdminDashboard();
-      } else if (password) {
-        Swal.fire({ icon: 'error', title: 'รหัสไม่ถูกต้อง', background: '#181818', color: '#fff', confirmButtonColor: '#E50914' });
-      }
-    }
-
-    async function enterAdminDashboard() {
-      document.getElementById("userCatalogSection").classList.add("hidden");
-      document.getElementById("adminDashboardSection").classList.remove("hidden");
-      document.getElementById("adminDashboardSection").classList.add("flex");
-      await loadAdminDashboardData();
+      const { value: pass } = await Swal.fire({ title: 'แอดมิน', input: 'password', showCancelButton: true, confirmButtonColor: '#E50914', background: '#181818', color: '#fff' });
+      if (pass === ADMIN_PASSWORD) {
+        document.getElementById("userCatalogSection").classList.add("hidden");
+        document.getElementById("adminDashboardSection").classList.remove("hidden");
+        document.getElementById("adminDashboardSection").classList.add("flex");
+        loadAdminDashboardData();
+      } else if (pass) Swal.fire({ icon: 'error', title: 'รหัสผิด', background: '#181818', color: '#fff', confirmButtonColor: '#E50914' });
     }
 
     function exitAdminMode() {
@@ -469,13 +286,13 @@
       document.getElementById("userCatalogSection").classList.remove("hidden");
     }
 
-    function switchAdminTab(tabName) {
-      ['overview', 'users', 'ratings'].forEach(tab => {
-        document.getElementById(`tabContent-${tab}`).classList.add("hidden");
-        document.getElementById(`tabBtn-${tab}`).className = "w-full text-left px-4 py-3 rounded text-netflix-lightGray hover:bg-[#333] font-semibold transition";
+    function switchAdminTab(t) {
+      ['overview', 'users', 'ratings'].forEach(x => {
+        document.getElementById(`tabContent-${x}`).classList.add("hidden");
+        document.getElementById(`tabBtn-${x}`).className = "w-full text-left px-3 py-2.5 rounded text-netflix-lightGray hover:bg-[#333] font-semibold";
       });
-      document.getElementById(`tabContent-${tabName}`).classList.remove("hidden");
-      document.getElementById(`tabBtn-${tabName}`).className = "w-full text-left px-4 py-3 rounded bg-netflix-red text-white font-bold transition";
+      document.getElementById(`tabContent-${t}`).classList.remove("hidden");
+      document.getElementById(`tabBtn-${t}`).className = "w-full text-left px-3 py-2.5 rounded bg-netflix-red text-white font-bold";
     }
 
     async function loadAdminDashboardData() {
@@ -483,160 +300,65 @@
       if (error || !ratings) return;
 
       const users = [...new Set(ratings.map(r => r.username))];
-      const today = new Date(); today.setHours(0,0,0,0);
-      const todayCount = ratings.filter(r => new Date(r.created_at) >= today).length;
-      const sumRating = ratings.reduce((acc, r) => acc + parseFloat(r.rating), 0);
-      
+      const todayCount = ratings.filter(r => new Date(r.created_at) >= new Date().setHours(0,0,0,0)).length;
       document.getElementById("dashTotalUsers").innerText = users.length;
       document.getElementById("dashTotalRatings").innerText = ratings.length;
       document.getElementById("dashTodayRatings").innerText = todayCount;
-      document.getElementById("dashGlobalAvg").innerText = ratings.length ? (sumRating / ratings.length).toFixed(1) : "0.0";
+      document.getElementById("dashGlobalAvg").innerText = ratings.length ? (ratings.reduce((a, r) => a + parseFloat(r.rating), 0) / ratings.length).toFixed(1) : "0.0";
 
-      renderAdminCharts(ratings);
+      const dist = [0,0,0,0,0]; ratings.forEach(r => dist[Math.min(Math.round(r.rating),5)-1]++);
+      if(distChart) distChart.destroy();
+      distChart = new Chart(document.getElementById('chartRatingDist'), { type: 'bar', data: { labels: ['1','2','3','4','5'], datasets: [{ data: dist, backgroundColor: '#E50914' }] }, options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#808080' }, grid: { color: '#333' } }, x: { grid: { display: false }, ticks: { color: '#808080' } } } }});
 
-      const userBadgeContainer = document.getElementById("adminUserBadges");
-      userBadgeContainer.innerHTML = users.map(u => `
-        <button onclick="inspectUserInAdmin('${escapeHtml(u)}')" class="px-3 py-1.5 bg-[#333] hover:bg-white hover:text-black text-white rounded font-bold transition text-xs">
-          ${u}
-        </button>
-      `).join('');
+      const count = {}; ratings.forEach(r => count[r.anime_name] = (count[r.anime_name]||0)+1);
+      const top = Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      if(topChart) topChart.destroy();
+      topChart = new Chart(document.getElementById('chartTopAnime'), { type: 'doughnut', data: { labels: top.map(t=>t[0].substring(0,10)+'..'), datasets: [{ data: top.map(t=>t[1]), backgroundColor: ['#E50914','#b20710','#fff','#808080','#333'], borderWidth: 0 }] }, options: { plugins: { legend: { position: 'right', labels: { color: '#fff', font: {size: 10} } } } }});
 
-      const tableBody = document.getElementById("adminRatingsTableBody");
-      tableBody.innerHTML = ratings.map(r => `
-        <tr class="hover:bg-[#333] transition">
-          <td class="p-4 font-bold text-white">${escapeHtml(r.username)}</td>
-          <td class="p-4">${escapeHtml(r.anime_name)}</td>
-          <td class="p-4">${r.release_year}</td>
-          <td class="p-4 text-right text-netflix-red font-bold">★ ${r.rating}</td>
-        </tr>
-      `).join('');
+      document.getElementById("adminUserBadges").innerHTML = users.map(u => `<button onclick="inspectUser('${escapeHtml(u)}')" class="px-2 py-1 bg-[#333] hover:bg-white hover:text-black rounded text-[10px] font-bold text-white">${u}</button>`).join('');
+      document.getElementById("adminRatingsTableBody").innerHTML = ratings.map(r => `<tr class="hover:bg-[#333]"><td class="p-3 font-bold text-white">${escapeHtml(r.username)}</td><td class="p-3">${escapeHtml(r.anime_name)}</td><td class="p-3">${r.release_year}</td><td class="p-3 text-right text-netflix-red font-bold">★ ${r.rating}</td></tr>`).join('');
     }
 
-    // วาดกราฟ Chart.js (ธีมแดง)
-    function renderAdminCharts(ratings) {
-      const dist = [0, 0, 0, 0, 0];
-      ratings.forEach(r => dist[Math.min(Math.max(Math.round(r.rating), 1), 5) - 1]++);
-
-      if (distChart) distChart.destroy();
-      distChart = new Chart(document.getElementById('chartRatingDist').getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: ['1 ดาว', '2 ดาว', '3 ดาว', '4 ดาว', '5 ดาว'],
-          datasets: [{ data: dist, backgroundColor: '#E50914', borderRadius: 4 }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-          scales: { y: { ticks: { color: '#808080' }, grid: { color: '#333' } }, x: { ticks: { color: '#808080' }, grid: { display: false } } }
-        }
-      });
-
-      const countMap = {};
-      ratings.forEach(r => countMap[r.anime_name] = (countMap[r.anime_name] || 0) + 1);
-      const top5 = Object.entries(countMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-      if (topChart) topChart.destroy();
-      topChart = new Chart(document.getElementById('chartTopAnime').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: top5.map(t => t[0].substring(0, 15) + '..'),
-          datasets: [{ data: top5.map(t => t[1]), backgroundColor: ['#E50914', '#b20710', '#fff', '#808080', '#333'], borderWidth: 0 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#e5e5e5' } } } }
-      });
-    }
-
-    // ================= COLLABORATIVE FILTERING =================
-    function computeRBar(ratings, user) {
-      const scores = ratings.filter(r => r.username === user).map(r => parseFloat(r.rating));
-      return scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-    }
-    function computeSim(ratings, u1, u2) {
-      const rb1 = computeRBar(ratings, u1), rb2 = computeRBar(ratings, u2);
-      const i1 = ratings.filter(r => r.username === u1), i2 = ratings.filter(r => r.username === u2);
-      const common = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
-      if (!common.length) return 0;
+    const cRBar = (r, u) => { const s = r.filter(x=>x.username===u).map(x=>parseFloat(x.rating)); return s.length ? s.reduce((a,b)=>a+b,0)/s.length : 0; };
+    const cSim = (r, u1, u2) => {
+      const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2), i1 = r.filter(x=>x.username===u1), i2 = r.filter(x=>x.username===u2);
+      const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
+      if(!com.length) return 0;
       let num = 0, d1 = 0, d2 = 0;
-      common.forEach(item => {
-        const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x => x.anime_name === item.anime_name).rating);
-        num += (r1 - rb1) * (r2 - rb2); d1 += Math.pow(r1 - rb1, 2); d2 += Math.pow(r2 - rb2, 2);
-      });
-      const den = Math.sqrt(d1) * Math.sqrt(d2); return den === 0 ? 0 : num / den;
-    }
+      com.forEach(item => { const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; });
+      return (d1*d2)===0 ? 0 : num/Math.sqrt(d1*d2);
+    };
 
-    async function inspectUserInAdmin(targetUser) {
-      const { data: allRatings } = await db.from('anime_ratings').select('*');
-      if (!allRatings) return;
-
-      const userRatings = allRatings.filter(r => r.username === targetUser);
-      const r_bar = computeRBar(allRatings, targetUser).toFixed(2);
-      const otherUsers = [...new Set(allRatings.map(r => r.username))].filter(u => u !== targetUser);
-      const similarities = otherUsers.map(u => ({ user: u, sim: computeSim(allRatings, targetUser, u) })).sort((a, b) => b.sim - a.sim);
-
-      const seen = userRatings.map(r => r.anime_name);
-      const suggestions = [...new Set(allRatings.filter(r => r.username !== targetUser && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4).map(r => r.anime_name))];
-
+    async function inspectUser(u) {
+      const { data: all } = await db.from('anime_ratings').select('*');
+      const ur = all.filter(r=>r.username===u), rb = cRBar(all,u).toFixed(2), ou = [...new Set(all.map(r=>r.username))].filter(x=>x!==u);
+      const sim = ou.map(x=>({user:x, sim: cSim(all,u,x)})).sort((a,b)=>b.sim-a.sim);
+      const seen = ur.map(r=>r.anime_name), sugg = [...new Set(all.filter(r=>r.username!==u && !seen.includes(r.anime_name) && parseFloat(r.rating)>=4).map(r=>r.anime_name))];
       document.getElementById("adminUserMatrixBox").innerHTML = `
-        <div class="text-left space-y-4">
-          <div class="flex justify-between items-center border-b border-[#333] pb-3">
-            <div>
-              <h4 class="text-lg font-bold text-white">${targetUser}</h4>
-              <p class="text-xs text-netflix-gray mt-1">ให้คะแนนแล้ว ${userRatings.length} เรื่อง</p>
-            </div>
-            <span class="px-3 py-1 bg-netflix-red text-white font-bold rounded text-sm">r̄ = ${r_bar}</span>
+        <div class="text-left space-y-3">
+          <div class="flex justify-between items-center border-b border-[#333] pb-2">
+            <div><h4 class="font-bold text-white">${u}</h4><p class="text-[10px]">ดูแล้ว ${ur.length} เรื่อง</p></div>
+            <span class="px-2 py-1 bg-netflix-red text-white font-bold rounded text-[10px]">r̄ = ${rb}</span>
           </div>
-          <div class="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p class="font-bold text-white mb-2">ประวัติการดู</p>
-              <div class="space-y-1 h-32 overflow-y-auto pr-2">
-                ${userRatings.map(r => `<div class="flex justify-between bg-[#141414] p-2 rounded"><span class="truncate w-3/4 text-netflix-lightGray">${r.anime_name}</span><span class="text-netflix-red font-bold">★ ${r.rating}</span></div>`).join('')}
-              </div>
-            </div>
-            <div>
-              <p class="font-bold text-white mb-2">อัลกอริทึม Sim(u, v)</p>
-              <div class="space-y-1 h-32 overflow-y-auto pr-2">
-                ${similarities.map(s => `<div class="flex justify-between bg-[#141414] p-2 rounded"><span class="text-netflix-lightGray">vs ${s.user}</span><span class="${s.sim > 0.2 ? 'text-green-500' : 'text-netflix-gray'}">${s.sim.toFixed(2)}</span></div>`).join('') || '<div class="text-netflix-gray">ไม่มีข้อมูลเทียบเคียง</div>'}
-              </div>
-            </div>
+          <div class="grid grid-cols-2 gap-3 text-[10px]">
+            <div><p class="font-bold text-white mb-1">ประวัติ</p><div class="h-24 overflow-y-auto pr-1 space-y-1">${ur.map(r=>`<div class="flex justify-between bg-[#141414] p-1.5 rounded"><span class="truncate w-3/4">${r.anime_name}</span><span class="text-netflix-red">★${r.rating}</span></div>`).join('')}</div></div>
+            <div><p class="font-bold text-white mb-1">Sim(u,v)</p><div class="h-24 overflow-y-auto pr-1 space-y-1">${sim.map(s=>`<div class="flex justify-between bg-[#141414] p-1.5 rounded"><span>vs ${s.user}</span><span class="${s.sim>0.2?'text-green-500':''}">${s.sim.toFixed(2)}</span></div>`).join('')||'ไม่มีข้อมูล'}</div></div>
           </div>
-          <div class="border-t border-[#333] pt-3">
-            <p class="font-bold text-white mb-2">เนื้อหาที่ตรงกับรสนิยม:</p>
-            <div class="bg-[#141414] p-3 rounded text-netflix-lightGray">${suggestions.join(', ') || 'ยังไม่มีข้อมูลเพียงพอ'}</div>
-          </div>
-        </div>
-      `;
+          <div class="border-t border-[#333] pt-2"><p class="font-bold text-white mb-1 text-[10px]">เรื่องแนะนำ:</p><div class="bg-[#141414] p-2 rounded text-[10px]">${sugg.join(', ')||'-'}</div></div>
+        </div>`;
     }
 
     async function openUserRecommendationModal() {
-      const { value: targetUser } = await Swal.fire({
-        title: 'รับคำแนะนำ',
-        input: 'text',
-        inputPlaceholder: 'กรอกชื่อโปรไฟล์ของคุณ',
-        confirmButtonText: 'ค้นหา',
-        confirmButtonColor: '#E50914',
-        showCancelButton: true, cancelButtonText: 'ยกเลิก',
-        background: '#181818', color: '#fff'
-      });
-      if (!targetUser) return;
-
-      const { data: allRatings } = await db.from('anime_ratings').select('*');
-      const userRatings = (allRatings || []).filter(r => r.username.toLowerCase() === targetUser.trim().toLowerCase());
-      if (!userRatings.length) {
-        Swal.fire({ icon: 'info', title: 'ไม่พบประวัติ', text: 'กรุณาโหวตอย่างน้อย 1 เรื่องก่อน', background: '#181818', color: '#fff', confirmButtonColor: '#E50914' }); return;
-      }
-      const seen = userRatings.map(r => r.anime_name);
-      const suggestions = [...new Set(allRatings.filter(r => r.username.toLowerCase() !== targetUser.trim().toLowerCase() && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4).map(r => r.anime_name))];
-
-      Swal.fire({
-        title: `เรื่องเด็ดสำหรับคุณ`,
-        html: `<div class="text-left text-sm mt-4"><p class="text-netflix-gray mb-3">วิเคราะห์จาก ${userRatings.length} เรื่องที่คุณดู</p>
-               <div class="bg-[#2b2b2b] p-4 rounded text-white leading-relaxed max-h-48 overflow-y-auto">
-               ${suggestions.length ? suggestions.map(s => `• ${s}`).join('<br>') : 'โหวตเพิ่มอีกนิด เพื่อให้ระบบคำนวณได้แม่นยำขึ้น'}
-               </div></div>`,
-        background: '#181818', color: '#fff', confirmButtonColor: '#E50914'
-      });
+      const { value: u } = await Swal.fire({ title: 'ค้นหาเรื่องแนะนำ', input: 'text', confirmButtonColor: '#E50914', background: '#181818', color: '#fff' });
+      if(!u) return;
+      const { data: all } = await db.from('anime_ratings').select('*');
+      const ur = all.filter(r=>r.username.toLowerCase()===u.trim().toLowerCase());
+      if(!ur.length) return Swal.fire({ icon:'info', title:'ไม่พบประวัติ', background:'#181818', color:'#fff', confirmButtonColor:'#E50914'});
+      const seen = ur.map(r=>r.anime_name), sugg = [...new Set(all.filter(r=>r.username.toLowerCase()!==u.trim().toLowerCase() && !seen.includes(r.anime_name) && parseFloat(r.rating)>=4).map(r=>r.anime_name))];
+      Swal.fire({ title: 'เรื่องเด็ดของคุณ', html: `<div class="text-left text-xs"><p class="text-netflix-gray mb-2">อิงจาก ${ur.length} เรื่องที่ดู</p><div class="bg-[#2b2b2b] p-3 rounded text-white">${sugg.length?sugg.map(s=>`• ${s}`).join('<br>'):'โหวตเพิ่มหน่อย'}</div></div>`, background: '#181818', color: '#fff', confirmButtonColor: '#E50914' });
     }
 
-    function escapeHtml(text) { return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : ''; }
+    function escapeHtml(t) { return t ? t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ''; }
   </script>
 </body>
 </html>
