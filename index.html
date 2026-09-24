@@ -313,14 +313,14 @@
     ];
 
     // โหลดข้อมูลอนิเมะ
-    fetchAnimeCatalog();
+    ();
 
     async function fetchAnimeCatalog() {
       const grid = document.getElementById("animeGrid");
       try {
         const { data, error } = await db
           .from('animes')
-          .select('id, title, genre, release_year')
+          .select('id, title, genre, release_year, image_url')
           .order('title', { ascending: true });
 
         if (error) throw error;
@@ -342,7 +342,7 @@
       const grid = document.getElementById("animeGrid");
       grid.innerHTML = list.map((anime, index) => {
         // เลือกลิ้งค์โปสเตอร์จำลองตาม index ให้ดูเป็นภาพกราฟิกสวยงาม
-        const posterUrl = posterPool[index % posterPool.length];
+        const posterUrl = anime.image_url || posterPool[index % posterPool.length];
         return `
           <div onclick="openRatingModal('${escapeHtml(anime.title)}')" 
             class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col group relative">
@@ -400,7 +400,7 @@
       document.getElementById("modalAnimeMeta").innerText = `${selectedAnime.genre} • ปี ${selectedAnime.release_year}`;
       
       const idx = animeMasterList.findIndex(a => a.title === title);
-      document.getElementById("modalPosterImg").src = posterPool[idx % posterPool.length];
+      document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[idx % posterPool.length];
 
       setModalRating(5);
       document.getElementById("ratingModal").classList.remove("hidden");
