@@ -1,1594 +1,569 @@
 <!DOCTYPE html>
-
 <html lang="th">
-
 <head>
-
   <meta charset="UTF-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <title>Anime Matrix Stream</title>
-
+  <title>Anime Recommendation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
-
-  
-
-  <!-- Tailwind CSS -->
-
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- SweetAlert2 -->
-
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <!-- Supabase JS Client -->
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Chart.js สำหรับกราฟแดชบอร์ด -->
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-
+  <script src="https://kit.fontawesome.com/4807788873.js" crossorigin="anonymous"></script>
   <script>
-
     tailwind.config = {
-
-      theme: {
-
-        extend: {
-
-          colors: {
-
-            brand: {
-
-              blue: '#00F0FF',
-
-              darkBlue: '#070D18',
-
-              cardBlue: '#0E1A2E',
-
-              cardHover: '#162846',
-
-              orange: '#FF8A00',
-
-              neonOrange: '#FF5400'
-
-            }
-
-          }
-
-        }
-
-      }
-
+      theme: { extend: { colors: { brand: { blue: '#00F0FF', darkBlue: '#070D18', cardBlue: '#0E1A2E', cardHover: '#162846', orange: '#FF8A00', neonOrange: '#FF5400' } } } }
     }
-
   </script>
-
   <style>
-
-    /* Custom Scrollbar */
-
+    body { font-family: "Kanit", sans-serif; font-weight: 300; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-
     ::-webkit-scrollbar-track { background: #070D18; }
-
     ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; }
-
     ::-webkit-scrollbar-thumb:hover { background: #00F0FF; }
-
-
-
-    .star-btn {
-
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease-in-out;
-
-    }
-
-    .star-btn:hover, .star-btn:active {
-
-      transform: scale(1.35) rotate(6deg);
-
-    }
-
-    .star-active {
-
-      color: #FF8A00;
-
-      filter: drop-shadow(0 0 8px rgba(255, 138, 0, 0.8));
-
-    }
-
-    .star-inactive {
-
-      color: #334155;
-
-    }
-
-    .poster-card {
-
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-
-    }
-
-    .poster-card:hover {
-
-      transform: translateY(-6px) scale(1.02);
-
-      box-shadow: 0 12px 25px -5px rgba(0, 240, 255, 0.25);
-
-    }
-
+    .star-btn { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease-in-out; }
+    .star-btn:hover, .star-btn:active { transform: scale(1.35) rotate(6deg); }
+    .star-active { color: #FF8A00; filter: drop-shadow(0 0 8px rgba(255, 138, 0, 0.8)); }
+    .star-inactive { color: #334155; }
+    .poster-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .poster-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 25px -5px rgba(0, 240, 255, 0.25); }
   </style>
-
 </head>
-
-<body class="bg-brand-darkBlue text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-brand-blue selection:text-black">
-
-
+<body class="bg-brand-darkBlue text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand-blue selection:text-black overflow-x-hidden">
 
   <!-- ================= TOP NAVBAR ================= -->
-
-  <nav class="sticky top-0 z-40 bg-brand-darkBlue/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex justify-between items-center shadow-lg">
-
-    <div class="flex items-center gap-3">
-
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-brand-blue flex items-center justify-center font-black text-black text-xl shadow-md">
-
-        N
-
-      </div>
-
+  <nav class="sticky top-0 z-40 bg-brand-darkBlue/90 backdrop-blur border-b border-slate-800 px-4 md:px-10 py-3 md:py-4 flex justify-between items-center shadow-lg">
+    <div class="flex items-center gap-2 md:gap-3">
+      <div class="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-brand-blue flex items-center justify-center font-black text-black text-sm md:text-xl shadow-md">N</div>
       <div>
-
-        <h1 class="text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME MATRIX</h1>
-
-        <span class="text-[10px] text-slate-400">Netflix-Style Recommendation System</span>
-
+        <h1 class="text-sm md:text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME RECOMMENDATION</h1>
+        <span class="text-[8px] md:text-[10px] text-slate-400 block">Hybrid Recommendation</span>
       </div>
-
     </div>
-
-    
-
     <div class="flex items-center gap-2">
-
-      <button onclick="openUserRecommendationModal()" class="px-3 py-1.5 text-xs font-bold rounded-xl border border-brand-blue/60 text-brand-blue hover:bg-brand-blue hover:text-black transition shadow-sm active:scale-95">
-
-        💡 แนะนำสำหรับฉัน
-
+      <button onclick="openRecInputModal()" class="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold rounded-xl border border-brand-blue/60 text-brand-blue hover:bg-brand-blue hover:text-black transition shadow-sm active:scale-95">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hidden sm:inline ml-1">แนะนำฉัน</span>
       </button>
-
-      <button onclick="promptAdminLogin()" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black hover:opacity-90 transition shadow-sm active:scale-95">
-
-        🔑 แอดมิน
-
+      <button onclick="openAdminLoginModal()" class="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold rounded-xl bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black hover:opacity-90 transition shadow-sm active:scale-95">
+        <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline ml-1">แอดมิน</span>
       </button>
-
     </div>
-
   </nav>
 
-
-
-  <!-- ================= USER VIEW: NETFLIX-STYLE POSTER GRID ================= -->
-
-  <section id="userCatalogSection" class="flex-grow max-w-6xl w-full mx-auto px-4 py-6">
-
-    <!-- Banner & Search -->
-
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-
+  <!-- ================= USER VIEW: POSTER GRID ================= -->
+  <section id="userCatalogSection" class="flex-grow max-w-6xl w-full mx-auto px-4 py-4 md:py-6">
+    <div class="mb-4 md:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl">
       <div>
-
-        <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-2">
-
-          แตะที่เรื่องเพื่อ <span class="text-brand-orange">โหวตให้คะแนน ⭐</span>
-
-        </h2>
-
-        <p class="text-xs text-slate-400 mt-1">ระบบจะรวบรวมรสนิยมของคุณเพื่อแนะนำอนิเมะที่ตรงใจที่สุด</p>
-
+        <h2 class="text-lg md:text-2xl font-black text-white flex items-center gap-2">แตะเรื่องเพื่อ <span class="text-brand-orange">โหวตคะแนน ⭐</span></h2>
+        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากทั้งรสนิยม, แนวเรื่อง และปีที่ฉาย</p>
       </div>
-
-      
-
-      <!-- Search Box -->
-
       <div class="relative w-full md:w-72">
-
-        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหาชื่ออนิเมะ..." 
-
-          class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
-
+        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหารายชื่อหรือแนวอนิเมะ..." class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
       </div>
-
     </div>
-
-
-
-    <!-- Anime Grid Container -->
-
-    <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-
-      <!-- Skeleton Loading -->
-
-      <div class="col-span-full py-16 text-center text-slate-500 text-sm">
-
-        ⏳ กำลังโหลดคลังอนิเมะระดับพรีเมียม...
-
+    
+    <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+      <div class="col-span-full flex flex-col items-center justify-center py-20 text-brand-blue">
+        <i class="fa-solid fa-circle-notch animate-spin text-4xl mb-4"></i>
+        <p class="text-sm font-bold animate-pulse">กำลังซิงค์ข้อมูลคลังอนิเมะ...</p>
       </div>
-
     </div>
-
   </section>
 
-
-
-  <!-- ================= RATING MODAL (NETFLIX POPUP) ================= -->
-
-  <div id="ratingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-
-    <div class="bg-brand-cardBlue border-2 border-brand-orange/60 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-
-      <!-- Close Button -->
-
-      <button onclick="closeRatingModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full w-7 h-7 flex items-center justify-center text-xs">
-
-        ✕
-
-      </button>
-
-
-
+  <!-- ================= MODALS ================= -->
+  <!-- Rating Modal -->
+  <div id="ratingModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeRatingModal()">
+    <div class="bg-brand-cardBlue border-2 border-brand-orange/60 w-full max-w-sm rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative">
+      <button onclick="closeRatingModal()" class="absolute top-3 right-3 md:top-4 md:right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full w-7 h-7 flex items-center justify-center text-xs transition hover:rotate-90">✕</button>
       <div class="text-center">
-
-        <!-- Anime Poster Preview in Modal -->
-
-        <div class="w-24 h-32 mx-auto rounded-xl overflow-hidden shadow-lg border border-slate-700 mb-3 bg-slate-900">
-
+        <div class="mx-auto rounded-xl overflow-hidden shadow-lg border border-slate-700 mb-2 md:mb-3 bg-slate-900 w-24 h-36 md:w-28 md:h-40">
           <img id="modalPosterImg" src="" alt="Poster" class="w-full h-full object-cover">
-
         </div>
-
-
-
-        <h3 id="modalAnimeTitle" class="text-base font-extrabold text-brand-blue truncate">Anime Name</h3>
-
-        <p id="modalAnimeMeta" class="text-[11px] text-slate-400 mt-0.5">Genre • Year</p>
-
+        <h3 id="modalAnimeTitle" class="text-sm md:text-base font-extrabold text-brand-blue truncate px-2">Anime Name</h3>
+        <p id="modalAnimeMeta" class="text-[10px] md:text-[11px] text-slate-400 mt-0.5">Genre • Year</p>
       </div>
-
-
-
-      <form onsubmit="submitModalRating(event)" class="mt-4 space-y-4">
-
+      <form onsubmit="submitModalRating(event)" class="mt-3 md:mt-4 space-y-3 md:space-y-4">
         <div>
-
-          <label class="block text-xs font-bold text-slate-300 mb-1">👤 บัญชีผู้ใช้ / ชื่อเล่นของคุณ:</label>
-
-          <input type="text" id="modalUsername" required placeholder="เช่น Thanadun" 
-
-            class="w-full text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white placeholder-slate-600 transition" />
-
+          <label class="block text-[10px] md:text-xs font-bold text-slate-300 mb-1.5 md:mb-2"><i class="fa-regular fa-user mr-1"></i> ชื่อโปรไฟล์ของคุณ:</label>
+          <input type="text" id="modalUsername" required placeholder="เช่น User123" class="w-full text-xs md:text-sm px-3.5 py-2 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white transition" />
         </div>
-
-
-
-        <!-- Star Rating -->
-
-        <div class="bg-[#080E1A]/60 p-3 rounded-2xl border border-slate-800 text-center">
-
+        <div class="bg-[#080E1A]/60 p-2 md:p-3 rounded-xl md:rounded-2xl border border-slate-800 text-center">
           <div class="flex justify-between items-center mb-1 px-1">
-
-            <span class="text-xs font-bold text-brand-orange">ระดับความชอบ:</span>
-
-            <span id="modalStarLabel" class="text-xs font-black text-brand-orange">5 / 5 ดาว</span>
-
+            <span class="text-[10px] md:text-xs font-bold text-brand-orange">ความชอบ:</span>
+            <span id="modalStarLabel" class="text-[10px] md:text-xs font-black text-brand-orange">5 / 5 ดาว</span>
           </div>
-
-          <div class="flex justify-center gap-2.5 my-1">
-
-            <button type="button" onclick="setModalRating(1)" class="star-btn text-3xl star-active">★</button>
-
-            <button type="button" onclick="setModalRating(2)" class="star-btn text-3xl star-active">★</button>
-
-            <button type="button" onclick="setModalRating(3)" class="star-btn text-3xl star-active">★</button>
-
-            <button type="button" onclick="setModalRating(4)" class="star-btn text-3xl star-active">★</button>
-
-            <button type="button" onclick="setModalRating(5)" class="star-btn text-3xl star-active">★</button>
-
+          <div class="flex justify-center gap-1.5 md:gap-2.5 my-1">
+            <button type="button" onclick="setModalRating(1)" class="star-btn text-2xl md:text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(2)" class="star-btn text-2xl md:text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(3)" class="star-btn text-2xl md:text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(4)" class="star-btn text-2xl md:text-3xl star-active">★</button>
+            <button type="button" onclick="setModalRating(5)" class="star-btn text-2xl md:text-3xl star-active">★</button>
           </div>
-
         </div>
-
-
-
-        <button type="submit" id="modalSubmitBtn" class="w-full py-3 bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black text-sm rounded-xl transition shadow-lg shadow-brand-orange/20 active:scale-95">
-
-          🔥 บันทึกคะแนนลง Cloud
-
+        <button type="submit" id="modalSubmitBtn" class="w-full py-2.5 md:py-3 bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black text-xs md:text-sm rounded-xl transition shadow-lg active:scale-95 flex justify-center items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกคะแนน
         </button>
-
       </form>
-
     </div>
-
   </div>
 
-
-
-  <!-- ================= ADMIN DASHBOARD (SIDEBAR + CHARTS + MATRIX) ================= -->
-
-  <section id="adminDashboardSection" class="hidden flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 gap-4">
-
-    
-
-    <!-- LEFT SIDEBAR -->
-
-    <aside class="w-full md:w-64 bg-brand-cardBlue border border-slate-800 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
-
-      <div class="space-y-4">
-
-        <div class="border-b border-slate-800 pb-3">
-
-          <span class="text-xs font-black text-brand-orange uppercase tracking-wider">Admin Center</span>
-
-          <h3 class="text-base font-bold text-white">ระบบควบคุมการวิเคราะห์</h3>
-
-        </div>
-
-
-
-        <!-- Sidebar Navigation Menu -->
-
-        <nav class="space-y-1">
-
-          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition flex items-center gap-2">
-
-            📈 ภาพรวมสถิติ & กราฟ
-
-          </button>
-
-          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
-
-            👥 วิเคราะห์ราย User
-
-          </button>
-
-          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
-
-            📋 ตารางคะแนนทั้งหมด
-
-          </button>
-
-        </nav>
-
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeAdminLoginModal()">
+    <div class="bg-brand-cardBlue border border-brand-orange/40 w-full max-w-xs rounded-2xl p-6 shadow-2xl relative">
+      <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition hover:rotate-90">✕</button>
+      <div class="text-center mb-4">
+        <i class="fa-solid fa-shield-halved text-brand-orange text-3xl mb-2"></i>
+        <h3 class="text-base font-bold text-white">แอดมินแดชบอร์ด</h3>
       </div>
-
-
-
-      <!-- Exit Button -->
-
-      <div class="pt-4 border-t border-slate-800">
-
-        <button onclick="exitAdminMode()" class="w-full py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition">
-
-          🚪 ออกจากโหมด Admin
-
+      <form onsubmit="submitAdminLogin(event)" class="space-y-4">
+        <input type="password" id="adminPasswordInput" required placeholder="รหัสผ่าน..." class="w-full text-center text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-orange text-white" />
+        <button type="submit" id="adminLoginBtn" class="w-full py-2.5 bg-brand-orange text-black font-bold text-sm rounded-xl hover:bg-brand-neonOrange transition active:scale-95 flex justify-center items-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
         </button>
+      </form>
+    </div>
+  </div>
 
+  <!-- Recommend Input Modal -->
+  <div id="recInputModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeRecInputModal()">
+    <div class="bg-brand-cardBlue border border-brand-blue/40 w-full max-w-xs rounded-2xl p-6 shadow-2xl relative">
+      <button onclick="closeRecInputModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition hover:rotate-90">✕</button>
+      <div class="text-center mb-4">
+        <i class="fa-solid fa-wand-magic-sparkles text-brand-blue text-3xl mb-2"></i>
+        <h3 class="text-base font-bold text-white">รับคำแนะนำอนิเมะ</h3>
       </div>
+      <form onsubmit="submitRecInput(event)" class="space-y-4">
+        <input type="text" id="recUsernameInput" required placeholder="ชื่อโปรไฟล์ของคุณ..." class="w-full text-center text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white" />
+        <button type="submit" id="recInputBtn" class="w-full py-2.5 bg-brand-blue text-black font-bold text-sm rounded-xl hover:bg-[#00d0e0] transition active:scale-95 flex justify-center items-center gap-2">
+          <i class="fa-solid fa-magnifying-glass"></i> วิเคราะห์ผลลัพธ์
+        </button>
+      </form>
+    </div>
+  </div>
 
+  <!-- Recommend Result Modal -->
+  <div id="recResultModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeRecResultModal()">
+    <div class="bg-brand-cardBlue border border-brand-blue/50 w-full max-w-md rounded-2xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+      <button onclick="closeRecResultModal()" class="absolute top-3 right-3 md:top-4 md:right-4 text-slate-400 hover:text-white bg-[#080E1A] rounded-full w-7 h-7 flex items-center justify-center text-xs transition hover:rotate-90">✕</button>
+      <h3 id="recResultTitle" class="text-sm md:text-base font-bold text-brand-blue mb-2 md:mb-3 shrink-0 pr-8"><i class="fa-solid fa-chart-pie mr-1"></i> ผลการวิเคราะห์แบบ Hybrid</h3>
+      <div id="recResultContent" class="text-xs md:text-sm text-slate-300 overflow-y-auto pr-1">
+        <!-- Content Injected Here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN DASHBOARD ================= -->
+  <section id="adminDashboardSection" class="hidden flex-grow flex-col lg:flex-row max-w-7xl w-full mx-auto p-4 gap-4">
+    <aside class="w-full lg:w-64 bg-brand-cardBlue border border-slate-800 rounded-3xl p-4 flex flex-col justify-between shadow-xl shrink-0">
+      <div class="space-y-4">
+        <div class="border-b border-slate-800 pb-3">
+          <span class="text-xs font-black text-brand-orange uppercase tracking-wider">Admin Center</span>
+          <h3 class="text-base font-bold text-white">ระบบควบคุม</h3>
+        </div>
+        <nav class="space-y-1 flex flex-col sm:flex-row lg:flex-col gap-2 sm:gap-0">
+          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition">📈 ภาพรวมสถิติ</button>
+          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">👥 วิเคราะห์ User</button>
+          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">📋 ตารางคะแนน</button>
+        </nav>
+      </div>
+      <div class="pt-4 border-t border-slate-800 mt-4 sm:mt-0">
+        <button onclick="exitAdminMode()" class="w-full py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition">🚪 ออกจากโหมด Admin</button>
+      </div>
     </aside>
 
-
-
-    <!-- MAIN DASHBOARD CONTENT -->
-
-    <div class="flex-grow bg-brand-cardBlue border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-5 overflow-hidden">
-
-      
-
-      <!-- TAB 1: OVERVIEW & GRAPHS -->
-
-      <div id="tabContent-overview" class="space-y-5">
-
-        <!-- Metric Cards -->
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-
-          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
-
-            <span class="text-[11px] text-slate-400 font-semibold block">ผู้ใช้งานทั้งหมด</span>
-
-            <span id="dashTotalUsers" class="text-2xl font-black text-brand-blue">0</span>
-
-          </div>
-
-          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
-
-            <span class="text-[11px] text-slate-400 font-semibold block">จำนวนคะแนนทั้งหมด</span>
-
-            <span id="dashTotalRatings" class="text-2xl font-black text-brand-orange">0</span>
-
-          </div>
-
-          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
-
-            <span class="text-[11px] text-slate-400 font-semibold block">ตอบวันนี้</span>
-
-            <span id="dashTodayRatings" class="text-2xl font-black text-green-400">0</span>
-
-          </div>
-
-          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
-
-            <span class="text-[11px] text-slate-400 font-semibold block">คะแนนเฉลี่ยระบบ</span>
-
-            <span id="dashGlobalAvg" class="text-2xl font-black text-yellow-300">0.0 ★</span>
-
-          </div>
-
+    <div class="flex-grow bg-brand-cardBlue border border-slate-800 rounded-3xl p-4 md:p-5 shadow-xl flex flex-col gap-4 md:gap-5 overflow-hidden">
+      <!-- TAB 1: OVERVIEW -->
+      <div id="tabContent-overview" class="space-y-4 md:space-y-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">ผู้ใช้งานทั้งหมด</span><span id="dashTotalUsers" class="text-xl md:text-2xl font-black text-brand-blue">0</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">คะแนนทั้งหมด</span><span id="dashTotalRatings" class="text-xl md:text-2xl font-black text-brand-orange">0</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">ตอบวันนี้</span><span id="dashTodayRatings" class="text-xl md:text-2xl font-black text-green-400">0</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">คะแนนเฉลี่ยระบบ</span><span id="dashGlobalAvg" class="text-xl md:text-2xl font-black text-yellow-300">0.0 ★</span></div>
         </div>
-
-
-
-        <!-- Charts Row -->
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          <!-- Chart 1: Rating Distribution -->
-
-          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
-
-            <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
-
-              <span>📊 การกระจายตัวของคะแนน (1 - 5 ดาว)</span>
-
-            </h4>
-
-            <div class="h-56">
-
-              <canvas id="chartRatingDist"></canvas>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- Chart 2: Top Voted Anime -->
-
-          <div class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800">
-
-            <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
-
-              <span>🏆 5 อันดับเรื่องที่มีคนโหวตมากที่สุด</span>
-
-            </h4>
-
-            <div class="h-56">
-
-              <canvas id="chartTopAnime"></canvas>
-
-            </div>
-
-          </div>
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">📊 การกระจายตัวของคะแนน</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartRatingDist"></canvas></div></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">🏆 5 อันดับยอดฮิต</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartTopAnime"></canvas></div></div>
         </div>
-
       </div>
-
-
-
-      <!-- TAB 2: USER MATRIX & SIMILARITY -->
-
+      <!-- TAB 2: MATRIX -->
       <div id="tabContent-users" class="hidden space-y-4">
-
-        <div>
-
-          <span class="text-xs text-slate-300 font-semibold block mb-2">เลือก User เพื่อประมวลผลโมเดล:</span>
-
-          <div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1 bg-[#080E1A] rounded-2xl border border-slate-800">
-
-            <span class="text-xs text-slate-500">กำลังโหลด User...</span>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- User Analysis Result -->
-
-        <div id="adminUserMatrixBox" class="bg-[#080E1A] p-4 rounded-2xl border border-slate-800 text-xs text-slate-400">
-
-          👈 กรุณาคลิกเลือกชื่อ User ด้านบนเพื่อเริ่มคำนวณ r̄ และ Cosine/Pearson Similarity
-
-        </div>
-
+        <div><span class="text-xs text-slate-300 font-semibold block mb-2">เลือก User เพื่อดูผลการประมวลผล:</span><div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1.5 md:p-2 bg-[#080E1A] rounded-2xl border border-slate-800"><span class="text-[10px] md:text-xs text-slate-500">กำลังโหลด User...</span></div></div>
+        <div id="adminUserMatrixBox" class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800 text-[10px] md:text-xs text-slate-400">👈 กรุณาคลิกเลือกชื่อ User ด้านบน</div>
       </div>
-
-
-
-      <!-- TAB 3: ALL RATINGS TABLE -->
-
-      <div id="tabContent-ratings" class="hidden space-y-3">
-
-        <h4 class="text-xs font-bold text-slate-300">ประวัติการให้คะแนนแบบละเอียด</h4>
-
-        <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-[#080E1A] max-h-96">
-
-          <table class="w-full text-left text-xs text-slate-300">
-
-            <thead class="bg-slate-900/80 text-brand-blue uppercase text-[10px] border-b border-slate-800 sticky top-0">
-
-              <tr>
-
-                <th class="p-3">User</th>
-
-                <th class="p-3">อนิเมะ</th>
-
-                <th class="p-3">แนว</th>
-
-                <th class="p-3">ปี</th>
-
-                <th class="p-3 text-right">คะแนน</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="adminRatingsTableBody" class="divide-y divide-slate-800/60">
-
-              <tr><td colspan="5" class="p-4 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr>
-
-            </tbody>
-
+      <!-- TAB 3: TABLE (WITH TIMESTAMP) -->
+      <div id="tabContent-ratings" class="hidden space-y-3 flex-col h-full">
+        <h4 class="text-xs font-bold text-slate-300">ประวัติการให้คะแนน</h4>
+        <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-[#080E1A] flex-grow max-h-[60vh] lg:max-h-96 w-full">
+          <table class="w-full text-left text-[10px] md:text-xs text-slate-300 min-w-[500px]">
+            <thead class="bg-slate-900/80 text-brand-blue uppercase text-[9px] md:text-[10px] border-b border-slate-800 sticky top-0"><tr><th class="p-2 md:p-3">เวลา</th><th class="p-2 md:p-3">User</th><th class="p-2 md:p-3">อนิเมะ</th><th class="p-2 md:p-3 hidden sm:table-cell">แนว</th><th class="p-2 md:p-3 text-right">คะแนน</th></tr></thead>
+            <tbody id="adminRatingsTableBody" class="divide-y divide-slate-800/60"><tr><td colspan="5" class="p-4 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr></tbody>
           </table>
-
         </div>
-
       </div>
-
-
-
     </div>
-
   </section>
 
-
-
-  <!-- ================= FOOTER ================= -->
-
-  <footer class="py-3 text-center text-[11px] text-slate-500 border-t border-slate-800">
-
-    Anime Recommendation Matrix Engine • Powered by Collaborative Filtering
-
+  <footer class="py-3 text-center text-[9px] md:text-[11px] text-slate-500 border-t border-slate-800">
+    Anime Matrix Engine • Hybrid Filtering (Collab + Content-Based)
   </footer>
 
-
-
   <!-- ================= LOGIC & JAVASCRIPT ================= -->
-
   <script>
-
-    // Supabase Setup
-
     const SUPABASE_URL = "https://kvluqwmeblzowpmktvlu.supabase.co";
-
     const SUPABASE_KEY = "sb_publishable_InS9bbhcT_RWYHN0ip8SGg_aKGDqBR0";
-
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
-
-    const ADMIN_PASSWORD = "1234";
-
-
-
-    // State
-
     let animeMasterList = [];
-
     let selectedAnime = null;
-
     let modalRatingVal = 5;
+    let distChart = null; let topChart = null;
 
-    let distChart = null;
-
-    let topChart = null;
-
-
-
-    // Poster Image Fallback (Unsplash Anime-Aesthetic Posters)
-
-    const posterPool = [
-
-      "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80",
-
-      "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop&q=80",
-
-      "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=80",
-
-      "https://images.unsplash.com/photo-1563089145-599997674d42?w=500&auto=format&fit=crop&q=80",
-
-      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
-
-      "https://images.unsplash.com/photo-1569701814238-d65492d5c317?w=500&auto=format&fit=crop&q=80"
-
-    ];
-
-
-
-    // โหลดข้อมูลอนิเมะ
+    const posterPool = ["https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80"];
 
     fetchAnimeCatalog();
 
-
-
     async function fetchAnimeCatalog() {
-
       const grid = document.getElementById("animeGrid");
-
       try {
-
-        const { data, error } = await db
-
-          .from('animes')
-
-          .select('id, title, genre, release_year, image_url')
-
-          .order('title', { ascending: true });
-
-
-
+        const { data, error } = await db.from('animes').select('id, title, genre, release_year, image_url').order('title', { ascending: true });
         if (error) throw error;
-
         animeMasterList = data || [];
-
-
-
-        if (animeMasterList.length === 0) {
-
-          grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">⚠️ ไม่พบข้อมูลอนิเมะในระบบ</div>`;
-
-          return;
-
+        if (animeMasterList.length === 0) { 
+          grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-slate-400"><i class="fa-solid fa-box-open text-3xl mb-3"></i><p class="text-xs md:text-sm">ไม่พบข้อมูลอนิเมะในระบบ</p></div>`; return; 
         }
-
-
-
         renderGrid(animeMasterList);
-
-      } catch (err) {
-
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-red-400">❌ โหลดคลังอนิเมะล้มเหลว: ${err.message}</div>`;
-
+      } catch (err) { 
+        grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-red-400"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><p class="text-xs md:text-sm text-center px-4">โหลดคลังอนิเมะล้มเหลว: ${err.message}</p></div>`; 
       }
-
     }
-
-
-
-    // เรนเดอร์การ์ดโปสเตอร์สไตล์ Netflix
 
     function renderGrid(list) {
-
-      const grid = document.getElementById("animeGrid");
-
-      grid.innerHTML = list.map((anime, index) => {
-
-        // เลือกลิ้งค์โปสเตอร์จำลองตาม index ให้ดูเป็นภาพกราฟิกสวยงาม
-
-        const posterUrl = anime.image_url || posterPool[index % posterPool.length];
-
+      document.getElementById("animeGrid").innerHTML = list.map((anime) => {
+        const posterUrl = anime.image_url || posterPool[0];
         return `
-
-          <div onclick="openRatingModal('${escapeHtml(anime.title)}')" 
-
-            class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col group relative">
-
-            
-
-            <!-- Poster Aspect Ratio 2:3 -->
-
+          <div onclick="openRatingModal('${escapeHtml(anime.title)}')" class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-xl md:rounded-2xl overflow-hidden flex flex-col group relative">
             <div class="relative w-full pb-[140%] bg-slate-900 overflow-hidden">
-
-              <img src="${posterUrl}" alt="${anime.title}" loading="lazy" 
-
-                class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
-
-              
-
+              <img src="${posterUrl}" alt="${anime.title}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
               <div class="absolute inset-0 bg-gradient-to-t from-brand-cardBlue via-transparent to-transparent opacity-90"></div>
-
-              
-
-              <!-- Badge Year -->
-
-              <span class="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur text-[10px] font-bold text-brand-orange border border-brand-orange/30">
-
-                ${anime.release_year}
-
-              </span>
-
+              <span class="absolute top-1.5 right-1.5 md:top-2 md:right-2 px-1.5 py-0.5 rounded md:rounded-md bg-black/70 backdrop-blur text-[8px] md:text-[10px] font-bold text-brand-orange border border-brand-orange/30">${anime.release_year}</span>
             </div>
-
-
-
-            <!-- Content Details -->
-
-            <div class="p-3 flex-grow flex flex-col justify-between">
-
+            <div class="p-2 md:p-3 flex-grow flex flex-col justify-between">
               <div>
-
-                <h4 class="text-xs font-black text-white group-hover:text-brand-blue line-clamp-2 leading-tight transition">
-
-                  ${anime.title}
-
-                </h4>
-
-                <p class="text-[10px] text-slate-400 line-clamp-1 mt-1">
-
-                  ${anime.genre}
-
-                </p>
-
+                <h4 class="text-[10px] md:text-xs font-black text-white group-hover:text-brand-blue line-clamp-2 leading-tight transition">${anime.title}</h4>
+                <p class="text-[8px] md:text-[10px] text-slate-400 line-clamp-1 mt-0.5 md:mt-1">${anime.genre}</p>
               </div>
-
-
-
-              <div class="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between">
-
-                <span class="text-[10px] text-brand-orange font-bold flex items-center gap-1">
-
-                  ★ ให้คะแนน
-
-                </span>
-
-                <span class="text-[10px] text-slate-500 group-hover:text-slate-300">แตะเพื่อโหวต</span>
-
+              <div class="mt-1 md:mt-2 pt-1.5 md:pt-2 border-t border-slate-800/60 flex items-center justify-between">
+                <span class="text-[8px] md:text-[10px] text-brand-orange font-bold">★ ให้คะแนน</span>
               </div>
-
             </div>
-
-          </div>
-
-        `;
-
+          </div>`;
       }).join('');
-
     }
-
-
 
     function filterAnimeGrid() {
-
       const q = document.getElementById("searchInput").value.toLowerCase().trim();
-
-      const filtered = animeMasterList.filter(a => 
-
-        a.title.toLowerCase().includes(q) || a.genre.toLowerCase().includes(q)
-
-      );
-
-      renderGrid(filtered);
-
+      renderGrid(animeMasterList.filter(a => a.title.toLowerCase().includes(q) || a.genre.toLowerCase().includes(q)));
     }
 
-
-
-    // Modal Rating Handlers
-
+    /* Modal Controls */
     function openRatingModal(title) {
-
       selectedAnime = animeMasterList.find(a => a.title === title);
-
       if (!selectedAnime) return;
-
-
-
       document.getElementById("modalAnimeTitle").innerText = selectedAnime.title;
-
       document.getElementById("modalAnimeMeta").innerText = `${selectedAnime.genre} • ปี ${selectedAnime.release_year}`;
-
-      
-
-      const idx = animeMasterList.findIndex(a => a.title === title);
-
-      document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[idx % posterPool.length];
-
-
-
+      document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[0];
       setModalRating(5);
-
       document.getElementById("ratingModal").classList.remove("hidden");
-
     }
-
-
-
-    function closeRatingModal() {
-
-      document.getElementById("ratingModal").classList.add("hidden");
-
-    }
-
-
+    function closeRatingModal() { document.getElementById("ratingModal").classList.add("hidden"); }
+    function openAdminLoginModal() { document.getElementById("adminPasswordInput").value = ''; document.getElementById("adminLoginModal").classList.remove("hidden"); }
+    function closeAdminLoginModal() { document.getElementById("adminLoginModal").classList.add("hidden"); }
+    function openRecInputModal() { document.getElementById("recUsernameInput").value = ''; document.getElementById("recInputModal").classList.remove("hidden"); }
+    function closeRecInputModal() { document.getElementById("recInputModal").classList.add("hidden"); }
+    function closeRecResultModal() { document.getElementById("recResultModal").classList.add("hidden"); }
 
     function setModalRating(val) {
-
       modalRatingVal = val;
-
       document.getElementById("modalStarLabel").innerText = `${val} / 5 ดาว`;
-
-      const buttons = document.querySelectorAll("#ratingModal .star-btn");
-
-      buttons.forEach((btn, idx) => {
-
-        if (idx < val) {
-
-          btn.classList.add("star-active");
-
-          btn.classList.remove("star-inactive");
-
-        } else {
-
-          btn.classList.remove("star-active");
-
-          btn.classList.add("star-inactive");
-
-        }
-
-      });
-
+      document.querySelectorAll("#ratingModal .star-btn").forEach((btn, idx) => btn.className = `star-btn text-2xl md:text-3xl ${idx < val ? 'star-active' : 'star-inactive'}`);
     }
 
-
-
+    /* Submit Rating & Upsert */
     async function submitModalRating(e) {
-
       e.preventDefault();
-
       const user = document.getElementById("modalUsername").value.trim();
-
       if (!selectedAnime || !user) return;
-
-
-
-      const submitBtn = document.getElementById("modalSubmitBtn");
-
-      submitBtn.disabled = true;
-
-      submitBtn.innerText = "กำลังบันทึกลง Cloud...";
-
-
+      const btn = document.getElementById("modalSubmitBtn");
+      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
       try {
-
-        const { error } = await db.from('anime_ratings').insert([
-
-          { 
-
-            username: user, 
-
-            anime_name: selectedAnime.title, 
-
-            genre: selectedAnime.genre, 
-
-            release_year: selectedAnime.release_year, 
-
-            rating: modalRatingVal 
-
-          }
-
-        ]);
-
+        const { error } = await db.from('anime_ratings').upsert(
+          { username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal },
+          { onConflict: 'username, anime_name' }
+        );
         if (error) throw error;
-
-
-
         closeRatingModal();
-
-
-
-        Swal.fire({
-
-          icon: 'success',
-
-          title: 'บันทึกสำเร็จ!',
-
-          html: `<p class="text-xs">บันทึกคะแนนเรื่อง <b>${selectedAnime.title}</b> เรียบร้อย</p>
-
-                 <p class="text-brand-orange font-bold mt-1">${'★'.repeat(modalRatingVal)} (${modalRatingVal}/5 ดาว)</p>`,
-
-          background: '#0E1A2E',
-
-          color: '#ffffff',
-
-          confirmButtonColor: '#FF8A00'
-
-        });
-
+        await processAndShowRecommendations(user);
       } catch (err) {
-
-        Swal.fire({
-
-          icon: 'error',
-
-          title: 'ไม่สำเร็จ',
-
-          text: err.message,
-
-          background: '#0E1A2E',
-
-          color: '#ffffff',
-
-          confirmButtonColor: '#FF5400'
-
-        });
-
+        Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#ffffff' });
       } finally {
-
-        submitBtn.disabled = false;
-
-        submitBtn.innerText = "🔥 บันทึกคะแนนลง Cloud";
-
+        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> บันทึกคะแนน`;
       }
-
     }
 
+    /* ------------------------------------------------------------------
+       HYBRID RECOMMENDATION ENGINE (Collaborative + Content-Based Genre/Year)
+       ------------------------------------------------------------------ */
+    
+    function parseGenres(genreStr) {
+      if(!genreStr) return [];
+      return genreStr.split(/[,/]/).map(g => g.trim().toLowerCase());
+    }
 
+    function getGenreSimilarity(genreStr1, genreStr2) {
+      const g1 = parseGenres(genreStr1);
+      const g2 = parseGenres(genreStr2);
+      if(g1.length === 0 || g2.length === 0) return 0;
+      const intersection = g1.filter(x => g2.includes(x));
+      const union = [...new Set([...g1, ...g2])];
+      return intersection.length / union.length;
+    }
 
-    // ================= ADMIN FUNCTIONS =================
+    function submitRecInput(e) {
+      e.preventDefault();
+      const user = document.getElementById("recUsernameInput").value.trim();
+      closeRecInputModal();
+      processAndShowRecommendations(user);
+    }
 
-    async function promptAdminLogin() {
+    async function processAndShowRecommendations(targetUser) {
+      document.getElementById("recResultModal").classList.remove("hidden");
+      document.getElementById("recResultTitle").innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1"></i> คำแนะนำสำหรับ: <span class="text-white">${targetUser}</span>`;
+      const content = document.getElementById("recResultContent");
+      content.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-circle-notch animate-spin text-brand-orange text-3xl md:text-4xl"></i><p class="mt-3 text-[10px] md:text-xs font-bold text-brand-orange animate-pulse">กำลังประมวลผล Hybrid Matrix...</p></div>`;
 
-      const { value: password } = await Swal.fire({
+      try {
+        const { data: allRatings } = await db.from('anime_ratings').select('*');
+        const userRatings = (allRatings || []).filter(r => r.username.toLowerCase() === targetUser.toLowerCase());
 
-        title: 'ระบบควบคุม Admin',
+        if (userRatings.length === 0) {
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-circle-exclamation text-brand-orange text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีประวัติการให้คะแนน</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">กรุณาแตะเลือกโปสเตอร์เพื่อโหวตอย่างน้อย 1 เรื่องก่อน</p></div>`;
+          return;
+        }
 
-        input: 'password',
+        const seen = userRatings.map(r => r.anime_name);
+        const highRatedUserItems = userRatings.filter(r => parseFloat(r.rating) >= 3);
+        const unseenAnimes = animeMasterList.filter(a => !seen.includes(a.title));
 
-        inputLabel: 'ใส่รหัสผ่านผู้ดูแลระบบ',
+        const scoredSuggestions = unseenAnimes.map(candidate => {
+          let score = 0;
+          highRatedUserItems.forEach(ratedItem => {
+             const genreSim = getGenreSimilarity(candidate.genre, ratedItem.genre);
+             let yearBonus = 0;
+             const yearDiff = Math.abs(parseInt(candidate.release_year || 0) - parseInt(ratedItem.release_year || 0));
+             if (yearDiff <= 3) yearBonus = 0.2; 
+             else if (yearDiff <= 8) yearBonus = 0.1; 
 
-        inputPlaceholder: 'รหัสผ่าน (เริ่มต้น: 1234)',
-
-        showCancelButton: true,
-
-        cancelButtonText: 'ยกเลิก',
-
-        confirmButtonText: 'เข้าสู่ระบบ',
-
-        confirmButtonColor: '#FF8A00',
-
-        cancelButtonColor: '#334155',
-
-        background: '#0E1A2E',
-
-        color: '#ffffff'
-
-      });
-
-
-
-      if (password === ADMIN_PASSWORD) {
-
-        enterAdminDashboard();
-
-      } else if (password) {
-
-        Swal.fire({
-
-          icon: 'error',
-
-          title: 'รหัสไม่ถูกต้อง',
-
-          text: 'คุณไม่มีสิทธิ์เข้าถึงระบบ Admin',
-
-          background: '#0E1A2E',
-
-          color: '#ffffff',
-
-          confirmButtonColor: '#FF5400'
-
+             const othersRatings = allRatings.filter(r => r.anime_name === candidate.title);
+             let collabScore = 0;
+             if(othersRatings.length > 0) {
+                const avgRating = othersRatings.reduce((sum, r) => sum + parseFloat(r.rating), 0) / othersRatings.length;
+                collabScore = (avgRating / 5) * 0.5;
+             }
+             const userRatingWeight = parseFloat(ratedItem.rating) / 5;
+             score += ((genreSim * 1.5) + yearBonus + collabScore) * userRatingWeight;
+          });
+          return { title: candidate.title, genre: candidate.genre, year: candidate.release_year, finalScore: score };
         });
 
-      }
+        const topSuggestions = scoredSuggestions
+            .filter(item => item.finalScore > 0)
+            .sort((a, b) => b.finalScore - a.finalScore)
+            .slice(0, 5);
 
+        if (topSuggestions.length === 0) {
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">ลองโหวตอนิเมะเพิ่มอีกสักนิด!</p></div>`;
+        } else {
+          content.innerHTML = `
+            <p class="text-slate-300 text-[10px] md:text-xs mb-2 md:mb-3">วิเคราะห์จากแนวเรื่องและปีฉายจาก <b class="text-brand-blue">${userRatings.length} เรื่อง</b> ที่คุณชอบ</p>
+            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ 5 อันดับเรื่องที่เราคัดมาให้คุณ:</span>
+            <div class="space-y-1.5 md:space-y-2 mt-2">
+              ${topSuggestions.map((s, i) => `
+                <div class="bg-[#080E1A] p-2 md:p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
+                  <div class="truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
+                    <span class="text-brand-blue font-bold text-[10px] md:text-xs">#${i+1}</span> <span class="text-white text-[10px] md:text-xs">${s.title}</span>
+                  </div>
+                  <span class="text-[8px] md:text-[9px] text-slate-500 bg-slate-900 px-1 md:px-1.5 py-0.5 rounded border border-slate-700 shrink-0">${s.year}</span>
+                </div>
+              `).join("")}
+            </div>`;
+        }
+      } catch (err) {
+        content.innerHTML = `<p class="text-red-400 text-xs text-center">เกิดข้อผิดพลาดในการดึงข้อมูล</p>`;
+      }
     }
 
-
+    /* ------------------------------------------------------------------
+       ADMIN DASHBOARD
+       ------------------------------------------------------------------ */
+    async function submitAdminLogin(e) {
+      e.preventDefault();
+      const inputPass = document.getElementById("adminPasswordInput").value;
+      const btn = document.getElementById("adminLoginBtn");
+      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังตรวจสอบ...`;
+      try {
+        const { data, error } = await db.from('app_users').select('password').limit(1).single();
+        if (error || !data) throw new Error("ไม่พบตาราง admin หรือคอลัมน์ password ในฐานข้อมูล!");
+        if (inputPass === data.password) { closeAdminLoginModal(); enterAdminDashboard(); } 
+        else { Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง', background: '#0E1A2E', color: '#fff' }); }
+      } catch (err) { Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#fff' }); } 
+      finally { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ`; }
+    }
 
     async function enterAdminDashboard() {
-
       document.getElementById("userCatalogSection").classList.add("hidden");
-
       document.getElementById("adminDashboardSection").classList.remove("hidden");
-
+      document.getElementById("adminDashboardSection").classList.add("flex");
       await loadAdminDashboardData();
-
     }
-
-
-
     function exitAdminMode() {
-
       document.getElementById("adminDashboardSection").classList.add("hidden");
-
+      document.getElementById("adminDashboardSection").classList.remove("flex");
       document.getElementById("userCatalogSection").classList.remove("hidden");
-
     }
-
-
-
-    function switchAdminTab(tabName) {
-
-      ['overview', 'users', 'ratings'].forEach(tab => {
-
-        document.getElementById(`tabContent-${tab}`).classList.add("hidden");
-
-        const btn = document.getElementById(`tabBtn-${tab}`);
-
-        btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2";
-
+    function switchAdminTab(t) {
+      ['overview', 'users', 'ratings'].forEach(x => {
+        document.getElementById(`tabContent-${x}`).classList.add("hidden");
+        document.getElementById(`tabContent-${x}`).classList.remove("flex");
+        document.getElementById(`tabBtn-${x}`).className = "w-full sm:w-1/3 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold text-slate-300 hover:bg-slate-800 transition";
       });
-
-
-
-      document.getElementById(`tabContent-${tabName}`).classList.remove("hidden");
-
-      const activeBtn = document.getElementById(`tabBtn-${tabName}`);
-
-      activeBtn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition flex items-center gap-2";
-
+      document.getElementById(`tabContent-${t}`).classList.remove("hidden");
+      if(t === 'ratings') document.getElementById(`tabContent-${t}`).classList.add("flex");
+      document.getElementById(`tabBtn-${t}`).className = "w-full sm:w-1/3 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold bg-brand-blue text-black transition";
     }
 
-
+    function formatThaiDateTime(isoString) {
+      if (!isoString) return "-";
+      const date = new Date(isoString);
+      const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+      return `${day} ${month} ${year} ${time}`;
+    }
 
     async function loadAdminDashboardData() {
-
-      const { data: ratings, error } = await db.from('anime_ratings').select('*').order('created_at', { ascending: false });
-
-      if (error || !ratings) return;
-
-
-
-      // Stats
-
+      const { data: ratings } = await db.from('anime_ratings').select('*').order('created_at', { ascending: false });
+      if (!ratings) return;
       const users = [...new Set(ratings.map(r => r.username))];
-
-      const today = new Date();
-
-      today.setHours(0,0,0,0);
-
-      const todayCount = ratings.filter(r => new Date(r.created_at) >= today).length;
-
-      
-
-      const sumRating = ratings.reduce((acc, r) => acc + parseFloat(r.rating), 0);
-
-      const avgRating = ratings.length ? (sumRating / ratings.length).toFixed(1) : "0.0";
-
-
-
+      const todayCount = ratings.filter(r => new Date(r.created_at) >= new Date().setHours(0,0,0,0)).length;
       document.getElementById("dashTotalUsers").innerText = users.length;
-
       document.getElementById("dashTotalRatings").innerText = ratings.length;
-
       document.getElementById("dashTodayRatings").innerText = todayCount;
-
-      document.getElementById("dashGlobalAvg").innerText = `${avgRating} ★`;
-
-
-
-      // Render Charts
-
+      document.getElementById("dashGlobalAvg").innerText = `${ratings.length ? (ratings.reduce((a, r) => a + parseFloat(r.rating), 0)/ratings.length).toFixed(1) : 0.0} ★`;
+      
       renderAdminCharts(ratings);
-
-
-
-      // Render User List for Tab 2
-
-      const userBadgeContainer = document.getElementById("adminUserBadges");
-
-      userBadgeContainer.innerHTML = users.map(u => `
-
-        <button onclick="inspectUserInAdmin('${escapeHtml(u)}')" 
-
-          class="px-3 py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 text-slate-200 rounded-xl text-xs font-bold transition">
-
-          👤 ${u}
-
-        </button>
-
-      `).join('');
-
-
-
-      // Render Table in Tab 3
-
-      const tableBody = document.getElementById("adminRatingsTableBody");
-
-      tableBody.innerHTML = ratings.map(r => `
-
-        <tr class="hover:bg-slate-800/40 transition">
-
-          <td class="p-3 font-semibold text-brand-blue">${escapeHtml(r.username)}</td>
-
-          <td class="p-3 text-white">${escapeHtml(r.anime_name)}</td>
-
-          <td class="p-3 text-slate-400">${escapeHtml(r.genre)}</td>
-
-          <td class="p-3 text-slate-400">${r.release_year}</td>
-
-          <td class="p-3 text-right text-brand-orange font-bold">${'★'.repeat(r.rating)} (${r.rating})</td>
-
-        </tr>
-
-      `).join('');
-
+      
+      document.getElementById("adminUserBadges").innerHTML = users.map(u => `<button onclick="inspectUserInAdmin('${escapeHtml(u)}')" class="px-2 md:px-3 py-1 md:py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition">👤 ${u}</button>`).join('');
+      
+      document.getElementById("adminRatingsTableBody").innerHTML = ratings.map(r => `
+        <tr class="hover:bg-slate-800/40 border-b border-slate-800/50">
+          <td class="p-2 md:p-3 text-[8px] md:text-[10px] text-slate-500 whitespace-nowrap">${formatThaiDateTime(r.created_at)}</td>
+          <td class="p-2 md:p-3 font-semibold text-brand-blue truncate max-w-[60px] md:max-w-[100px]">${escapeHtml(r.username)}</td>
+          <td class="p-2 md:p-3 text-white truncate max-w-[100px] md:max-w-[150px]">${escapeHtml(r.anime_name)}</td>
+          <td class="p-2 md:p-3 text-slate-400 text-[8px] md:text-[10px] truncate max-w-[60px] md:max-w-[100px] hidden sm:table-cell">${escapeHtml(r.genre)}</td>
+          <td class="p-2 md:p-3 text-right text-brand-orange font-bold text-[10px] md:text-xs">${'★'.repeat(r.rating)}</td>
+        </tr>`).join('');
     }
-
-
-
-    // วาดกราฟ Chart.js
 
     function renderAdminCharts(ratings) {
-
-      // 1. Rating Distribution (1 - 5 ดาว)
-
-      const dist = [0, 0, 0, 0, 0];
-
-      ratings.forEach(r => {
-
-        const star = Math.min(Math.max(Math.round(r.rating), 1), 5);
-
-        dist[star - 1]++;
-
-      });
-
-
-
-      const ctxDist = document.getElementById('chartRatingDist').getContext('2d');
-
-      if (distChart) distChart.destroy();
-
-      distChart = new Chart(ctxDist, {
-
-        type: 'bar',
-
-        data: {
-
-          labels: ['1 ดาว', '2 ดาว', '3 ดาว', '4 ดาว', '5 ดาว'],
-
-          datasets: [{
-
-            label: 'จำนวนโหวต',
-
-            data: dist,
-
-            backgroundColor: ['#334155', '#475569', '#0284C7', '#00F0FF', '#FF8A00'],
-
-            borderRadius: 8
-
-          }]
-
-        },
-
-        options: {
-
-          responsive: true,
-
-          maintainAspectRatio: false,
-
-          plugins: { legend: { display: false } },
-
-          scales: {
-
-            y: { ticks: { color: '#94A3B8', stepSize: 1 }, grid: { color: '#1E293B' } },
-
-            x: { ticks: { color: '#94A3B8' }, grid: { display: false } }
-
-          }
-
-        }
-
-      });
-
-
-
-      // 2. Top 5 Most Rated Anime
-
-      const countMap = {};
-
-      ratings.forEach(r => {
-
-        countMap[r.anime_name] = (countMap[r.anime_name] || 0) + 1;
-
-      });
-
-
-
-      const top5 = Object.entries(countMap)
-
-        .sort((a, b) => b[1] - a[1])
-
-        .slice(0, 5);
-
-
-
-      const ctxTop = document.getElementById('chartTopAnime').getContext('2d');
-
-      if (topChart) topChart.destroy();
-
-      topChart = new Chart(ctxTop, {
-
-        type: 'doughnut',
-
-        data: {
-
-          labels: top5.map(t => t[0].substring(0, 16) + '...'),
-
-          datasets: [{
-
-            data: top5.map(t => t[1]),
-
-            backgroundColor: ['#00F0FF', '#FF8A00', '#10B981', '#F59E0B', '#6366F1']
-
-          }]
-
-        },
-
-        options: {
-
-          responsive: true,
-
-          maintainAspectRatio: false,
-
-          plugins: {
-
-            legend: { position: 'right', labels: { color: '#94A3B8', boxWidth: 12, font: { size: 10 } } }
-
-          }
-
-        }
-
-      });
-
+      const dist = [0,0,0,0,0]; ratings.forEach(r => dist[Math.min(Math.max(Math.round(r.rating),1),5)-1]++);
+      if(distChart) distChart.destroy();
+      distChart = new Chart(document.getElementById('chartRatingDist'), { type: 'bar', data: { labels: ['1★','2★','3★','4★','5★'], datasets: [{ data: dist, backgroundColor: ['#334155','#475569','#0284C7','#00F0FF','#FF8A00'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#1E293B' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }});
+      const count = {}; ratings.forEach(r => count[r.anime_name] = (count[r.anime_name]||0)+1);
+      const top = Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      if(topChart) topChart.destroy();
+      topChart = new Chart(document.getElementById('chartTopAnime'), { type: 'doughnut', data: { labels: top.map(t=>t[0].substring(0,12)+'..'), datasets: [{ data: top.map(t=>t[1]), backgroundColor: ['#00F0FF','#FF8A00','#10B981','#F59E0B','#6366F1'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94A3B8', boxWidth: 8, font: {size: 9} } } } }});
     }
 
+    const cRBar = (r, u) => { const s = r.filter(x=>x.username===u).map(x=>parseFloat(x.rating)); return s.length ? s.reduce((a,b)=>a+b,0)/s.length : 0; };
+    const cSim = (r, u1, u2) => {
+      const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2), i1 = r.filter(x=>x.username===u1), i2 = r.filter(x=>x.username===u2);
+      const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
+      if(!com.length) return 0;
+      let num = 0, d1 = 0, d2 = 0;
+      com.forEach(item => { const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; });
+      return (d1*d2)===0 ? 0 : num/Math.sqrt(d1*d2);
+    };
 
-
-    // ================= COLLABORATIVE FILTERING =================
-
-    function computeRBar(ratings, user) {
-
-      const userRatings = ratings.filter(r => r.username === user).map(r => parseFloat(r.rating));
-
-      return userRatings.length ? (userRatings.reduce((a, b) => a + b, 0) / userRatings.length) : 0;
-
-    }
-
-
-
-    function computeSim(ratings, u1, u2) {
-
-      const r_bar1 = computeRBar(ratings, u1);
-
-      const r_bar2 = computeRBar(ratings, u2);
-
-
-
-      const items1 = ratings.filter(r => r.username === u1);
-
-      const items2 = ratings.filter(r => r.username === u2);
-
-
-
-      const common = items1.filter(i1 => items2.some(i2 => i2.anime_name === i1.anime_name));
-
-      if (common.length === 0) return 0;
-
-
-
-      let num = 0, den1 = 0, den2 = 0;
-
-      common.forEach(item => {
-
-        const r1 = parseFloat(item.rating);
-
-        const r2 = parseFloat(items2.find(i2 => i2.anime_name === item.anime_name).rating);
-
-        num += (r1 - r_bar1) * (r2 - r_bar2);
-
-        den1 += Math.pow(r1 - r_bar1, 2);
-
-        den2 += Math.pow(r2 - r_bar2, 2);
-
-      });
-
-
-
-      const den = Math.sqrt(den1) * Math.sqrt(den2);
-
-      return den === 0 ? 0 : num / den;
-
-    }
-
-
-
-    async function inspectUserInAdmin(targetUser) {
-
-      const { data: allRatings } = await db.from('anime_ratings').select('*');
-
-      if (!allRatings) return;
-
-
-
-      const userRatings = allRatings.filter(r => r.username === targetUser);
-
-      const r_bar = computeRBar(allRatings, targetUser).toFixed(2);
-
-      const otherUsers = [...new Set(allRatings.map(r => r.username))].filter(u => u !== targetUser);
-
-
-
-      const similarities = otherUsers.map(u => ({
-
-        user: u,
-
-        sim: computeSim(allRatings, targetUser, u)
-
-      })).sort((a, b) => b.sim - a.sim);
-
-
-
-      const seen = userRatings.map(r => r.anime_name);
-
-      const suggestions = allRatings
-
-        .filter(r => r.username !== targetUser && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4)
-
-        .map(r => r.anime_name);
-
-      const uniqueSuggestions = [...new Set(suggestions)];
-
-
+    async function inspectUserInAdmin(tu) {
+      const { data: all } = await db.from('anime_ratings').select('*');
+      if(!all) return;
+      
+      const ur = all.filter(r=>r.username===tu);
+      const rb = cRBar(all,tu).toFixed(2);
+      const ou = [...new Set(all.map(r=>r.username))].filter(x=>x!==tu);
+      
+      const simList = ou.map(x=>({user:x, sim: cSim(all,tu,x)})).sort((a,b)=>b.sim-a.sim);
+      const seen = ur.map(r=>r.anime_name);
+      const allAnimes = [...new Set(all.map(r=>r.anime_name))];
+      const unseen = allAnimes.filter(a => !seen.includes(a));
+      
+      const predictions = unseen.map(anime => {
+        let sumSimRating = 0; let sumSim = 0;
+        const raters = all.filter(r => r.anime_name === anime);
+        raters.forEach(rater => {
+          const userSimObj = simList.find(s => s.user === rater.username);
+          if (userSimObj && userSimObj.sim > 0) { sumSimRating += userSimObj.sim * parseFloat(rater.rating); sumSim += userSimObj.sim; }
+        });
+        const predictedRating = sumSim > 0 ? (sumSimRating / sumSim) : 0;
+        return { anime: anime, predictedScore: predictedRating };
+      }).filter(p => p.predictedScore > 0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 3); 
 
       document.getElementById("adminUserMatrixBox").innerHTML = `
-
-        <div class="space-y-4">
-
-          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-
-            <div>
-
-              <span class="text-sm font-black text-brand-blue">วิเคราะห์เปรียบเทียบ: ${targetUser}</span>
-
-              <span class="text-[10px] text-slate-400 block mt-0.5">ตอบแล้ว ${userRatings.length} เรื่อง</span>
-
-            </div>
-
-            <span class="px-2.5 py-1 bg-slate-800 text-brand-orange rounded-xl font-bold border border-slate-700">
-
-              r̄ เฉลี่ย = ${r_bar} ★
-
-            </span>
-
+        <div class="space-y-3 md:space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2 md:pb-3">
+            <div><span class="text-xs md:text-sm font-black text-brand-blue">${tu}</span><span class="text-[8px] md:text-[10px] text-slate-400 block mt-0.5">ตอบแล้ว ${ur.length} เรื่อง</span></div>
+            <span class="px-2 py-1 md:px-2.5 md:py-1 bg-slate-800 text-brand-orange rounded-lg md:rounded-xl font-bold border border-slate-700 text-[10px] md:text-xs">r̄ = ${rb} ★</span>
           </div>
-
-
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
-
-              <h5 class="text-[11px] font-bold text-slate-300 mb-1.5">ประวัติเรื่องที่ ${targetUser} ให้คะแนน:</h5>
-
-              <div class="max-h-36 overflow-y-auto space-y-1 pr-1">
-
-                ${userRatings.map(r => `
-
-                  <div class="flex justify-between items-center bg-[#070D18] px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px]">
-
-                    <span class="truncate max-w-[180px] text-slate-200">${r.anime_name}</span>
-
-                    <span class="text-brand-orange font-bold">${'★'.repeat(r.rating)}</span>
-
-                  </div>
-
-                `).join('')}
-
+              <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ประวัติเรื่องที่ให้คะแนน:</h5>
+              <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
+                ${ur.map(r=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="truncate max-w-[120px] md:max-w-[180px] text-slate-200">${r.anime_name}</span><span class="text-brand-orange font-bold shrink-0 ml-1">${'★'.repeat(r.rating)}</span></div>`).join('')}
               </div>
-
             </div>
-
-
-
             <div>
-
-              <h5 class="text-[11px] font-bold text-slate-300 mb-1.5">ความเหมือนกับ User อื่น Sim(target, x):</h5>
-
-              <div class="max-h-36 overflow-y-auto space-y-1 pr-1">
-
-                ${similarities.length ? similarities.map(s => `
-
-                  <div class="flex justify-between items-center bg-[#070D18] px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px]">
-
-                    <span class="text-slate-300">vs ${s.user}</span>
-
-                    <span class="${s.sim > 0.3 ? 'text-green-400 font-bold' : (s.sim < 0 ? 'text-rose-400' : 'text-slate-400')}">
-
-                      Sim: ${s.sim.toFixed(3)}
-
-                    </span>
-
-                  </div>
-
-                `).join('') : '<span class="text-slate-500 text-[11px]">ไม่มี User อื่นในระบบ</span>'}
-
+              <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ความเหมือน Sim(target, x):</h5>
+              <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
+                ${simList.length ? simList.map(s=>`<div class="flex justify-between bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">vs ${s.user}</span><span class="${s.sim>0.3?'text-green-400 font-bold':''} shrink-0 ml-1">${s.sim.toFixed(3)}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">ไม่มีคู่เทียบ</span>'}
               </div>
-
             </div>
-
           </div>
-
-
-
-          <div class="border-t border-slate-800 pt-3">
-
-            <h5 class="text-[11px] font-bold text-brand-orange mb-1">💡 เรื่องที่คาดว่า ${targetUser} น่าจะชอบ (จากคนที่มี Sim สูง):</h5>
-
-            <div class="p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-200">
-
-              ${uniqueSuggestions.length ? uniqueSuggestions.join(" • ") : "ยังไม่มีเรื่องแนะนำเพิ่มเติมในขณะนี้"}
-
+          
+          <div class="border-t border-slate-800 pt-2 md:pt-3">
+            <h5 class="text-[10px] md:text-[11px] font-bold text-brand-orange mb-1">💡 ผลทำนายคะแนน Collaborative:</h5>
+            <div class="space-y-1 mt-1 md:mt-2">
+              ${predictions.length > 0 
+                ? predictions.map((p, i) => `
+                    <div class="bg-[#080E1A] p-1.5 md:p-2 rounded-lg border border-slate-700 flex justify-between items-center text-[9px] md:text-xs">
+                      <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">#${i+1}</span>${p.anime}</span>
+                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">ทำนาย: ${p.predictedScore.toFixed(2)} ดาว</span>
+                    </div>
+                  `).join('') 
+                : `<div class="p-2 md:p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-500 text-[9px] md:text-xs">ยังไม่มีข้อมูลเพียงพอให้คำนวณ Predicted Rating</div>`
+              }
             </div>
-
           </div>
-
-        </div>
-
-      `;
-
+        </div>`;
     }
 
-
-
-    // Modal แนะนำสำหรับ User ทั่วไป
-
-    async function openUserRecommendationModal() {
-
-      const { value: targetUser } = await Swal.fire({
-
-        title: 'ค้นหาอนิเมะแนะนำสำหรับคุณ',
-
-        input: 'text',
-
-        inputLabel: 'พิมพ์ชื่อบัญชี / Username ของคุณ',
-
-        inputPlaceholder: 'เช่น Thanadun',
-
-        confirmButtonText: 'วิเคราะห์ผลลัพธ์',
-
-        confirmButtonColor: '#00F0FF',
-
-        showCancelButton: true,
-
-        cancelButtonText: 'ยกเลิก',
-
-        background: '#0E1A2E',
-
-        color: '#ffffff'
-
-      });
-
-
-
-      if (!targetUser) return;
-
-
-
-      const { data: allRatings } = await db.from('anime_ratings').select('*');
-
-      const userRatings = (allRatings || []).filter(r => r.username.toLowerCase() === targetUser.trim().toLowerCase());
-
-
-
-      if (userRatings.length === 0) {
-
-        Swal.fire({
-
-          icon: 'info',
-
-          title: 'ไม่พบประวัติ',
-
-          text: `ยังไม่มีประวัติการให้คะแนนของ "${targetUser}" กรุณาแตะเลือกโปสเตอร์เพื่อโหวตอย่างน้อย 1 เรื่อง`,
-
-          background: '#0E1A2E',
-
-          color: '#ffffff',
-
-          confirmButtonColor: '#FF8A00'
-
-        });
-
-        return;
-
-      }
-
-
-
-      const seen = userRatings.map(r => r.anime_name);
-
-      const suggestions = allRatings
-
-        .filter(r => r.username.toLowerCase() !== targetUser.trim().toLowerCase() && !seen.includes(r.anime_name) && parseFloat(r.rating) >= 4)
-
-        .map(r => r.anime_name);
-
-      const uniqueSuggestions = [...new Set(suggestions)];
-
-
-
-      Swal.fire({
-
-        icon: 'success',
-
-        title: `คำแนะนำสำหรับ ${targetUser}`,
-
-        html: `
-
-          <div class="text-left text-xs space-y-2 mt-2">
-
-            <p class="text-slate-300">คุณโหวตไปแล้วทั้งหมด: <b class="text-brand-blue">${userRatings.length} เรื่อง</b></p>
-
-            <div class="border-t border-slate-700 pt-2">
-
-              <span class="font-bold text-brand-orange block mb-1">✨ เรื่องที่คนรสนิยมคล้ายกันแนะนำ:</span>
-
-              <div class="text-white bg-[#070D18] p-3 rounded-xl border border-slate-800 leading-relaxed max-h-48 overflow-y-auto">
-
-                ${uniqueSuggestions.length ? uniqueSuggestions.map(s => `• <b>${s}</b>`).join("<br>") : "โหวตเพิ่มอีกสักนิด เพื่อให้ระบบจับคู่ความชอบได้แม่นยำขึ้น!"}
-
-              </div>
-
-            </div>
-
-          </div>
-
-        `,
-
-        background: '#0E1A2E',
-
-        color: '#ffffff',
-
-        confirmButtonColor: '#00F0FF'
-
-      });
-
-    }
-
-
-
-    function escapeHtml(text) {
-
-      if (!text) return '';
-
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-
-    }
-
+    function escapeHtml(t) { return t ? t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ''; }
   </script>
-
 </body>
-
-</html> 
-
+</html>
