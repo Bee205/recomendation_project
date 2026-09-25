@@ -30,6 +30,14 @@
     .star-inactive { color: #334155; }
     .poster-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
     .poster-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 25px -5px rgba(0, 240, 255, 0.25); }
+    
+    /* สไตล์สำหรับ Spreadsheet แบบ Excel */
+    .sheet-th { border: 1px solid #94A3B8; background-color: #3B82F6; color: white; font-weight: 600; padding: 4px 8px; text-align: center; white-space: nowrap; }
+    .sheet-th-row { border: 1px solid #94A3B8; background-color: #3B82F6; color: white; font-weight: 600; padding: 4px 8px; text-align: left; white-space: nowrap; position: sticky; left: 0; z-index: 10; }
+    .sheet-td { border: 1px solid #CBD5E1; background-color: white; color: black; padding: 4px 8px; text-align: center; }
+    .sheet-td-fill { border: 1px solid #94A3B8; background-color: #FDE047; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
+    .sheet-td-sim { border: 1px solid #94A3B8; background-color: #86EFAC; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
+    .sheet-td-rbar { border: 1px solid #94A3B8; background-color: white; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
   </style>
 </head>
 <body class="bg-brand-darkBlue text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand-blue selection:text-black overflow-x-hidden">
@@ -40,7 +48,7 @@
       <div class="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-brand-blue flex items-center justify-center font-black text-black text-sm md:text-xl shadow-md">N</div>
       <div>
         <h1 class="text-sm md:text-base font-extrabold tracking-wider text-brand-blue leading-none">ANIME RECOMMENDATION</h1>
-        <span class="text-[8px] md:text-[10px] text-slate-400 block">Hybrid Recommendation</span>
+        <span class="text-[8px] md:text-[10px] text-slate-400 block">Collaborative Filtering Engine</span>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -58,7 +66,7 @@
     <div class="mb-4 md:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl">
       <div>
         <h2 class="text-lg md:text-2xl font-black text-white flex items-center gap-2">แตะเรื่องเพื่อ <span class="text-brand-orange">โหวตคะแนน ⭐</span></h2>
-        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากทั้งรสนิยม, แนวเรื่อง และปีที่ฉาย</p>
+        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากระบบ Collaborative Filtering (โหวตซ้ำคืออัปเดต)</p>
       </div>
       <div class="relative w-full md:w-72">
         <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหารายชื่อหรือแนวอนิเมะ..." class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
@@ -148,7 +156,7 @@
   <div id="recResultModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeRecResultModal()">
     <div class="bg-brand-cardBlue border border-brand-blue/50 w-full max-w-md rounded-2xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
       <button onclick="closeRecResultModal()" class="absolute top-3 right-3 md:top-4 md:right-4 text-slate-400 hover:text-white bg-[#080E1A] rounded-full w-7 h-7 flex items-center justify-center text-xs transition hover:rotate-90">✕</button>
-      <h3 id="recResultTitle" class="text-sm md:text-base font-bold text-brand-blue mb-2 md:mb-3 shrink-0 pr-8"><i class="fa-solid fa-chart-pie mr-1"></i> ผลการวิเคราะห์แบบ Hybrid</h3>
+      <h3 id="recResultTitle" class="text-sm md:text-base font-bold text-brand-blue mb-2 md:mb-3 shrink-0 pr-8"><i class="fa-solid fa-chart-pie mr-1"></i> ผลการวิเคราะห์ (Collaborative)</h3>
       <div id="recResultContent" class="text-xs md:text-sm text-slate-300 overflow-y-auto pr-1">
         <!-- Content Injected Here -->
       </div>
@@ -164,9 +172,10 @@
           <h3 class="text-base font-bold text-white">ระบบควบคุม</h3>
         </div>
         <nav class="space-y-1 flex flex-col sm:flex-row lg:flex-col gap-2 sm:gap-0">
-          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition">📈 ภาพรวมสถิติ</button>
-          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">👥 วิเคราะห์ User</button>
-          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">📋 ตารางคะแนน</button>
+          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition">📈 ภาพรวมสถิติ</button>
+          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">👥 วิเคราะห์ User</button>
+          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">📋 ตารางคะแนนทั้งหมด</button>
+          <button onclick="switchAdminTab('spreadsheet')" id="tabBtn-spreadsheet" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition"><i class="fa-solid fa-file-excel text-green-400 mr-1"></i> Spreadsheet Matrix</button>
         </nav>
       </div>
       <div class="pt-4 border-t border-slate-800 mt-4 sm:mt-0">
@@ -175,6 +184,7 @@
     </aside>
 
     <div class="flex-grow bg-brand-cardBlue border border-slate-800 rounded-3xl p-4 md:p-5 shadow-xl flex flex-col gap-4 md:gap-5 overflow-hidden">
+      
       <!-- TAB 1: OVERVIEW -->
       <div id="tabContent-overview" class="space-y-4 md:space-y-5">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
@@ -188,14 +198,16 @@
           <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">🏆 5 อันดับยอดฮิต</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartTopAnime"></canvas></div></div>
         </div>
       </div>
-      <!-- TAB 2: MATRIX -->
+      
+      <!-- TAB 2: SIMPLE MATRIX -->
       <div id="tabContent-users" class="hidden space-y-4">
-        <div><span class="text-xs text-slate-300 font-semibold block mb-2">เลือก User เพื่อดูผลการประมวลผล:</span><div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1.5 md:p-2 bg-[#080E1A] rounded-2xl border border-slate-800"><span class="text-[10px] md:text-xs text-slate-500">กำลังโหลด User...</span></div></div>
+        <div><span class="text-xs text-slate-300 font-semibold block mb-2">เลือก User เพื่อดูผลลัพธ์คร่าวๆ:</span><div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1.5 md:p-2 bg-[#080E1A] rounded-2xl border border-slate-800"><span class="text-[10px] md:text-xs text-slate-500">กำลังโหลด User...</span></div></div>
         <div id="adminUserMatrixBox" class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800 text-[10px] md:text-xs text-slate-400">👈 กรุณาคลิกเลือกชื่อ User ด้านบน</div>
       </div>
-      <!-- TAB 3: TABLE (WITH TIMESTAMP) -->
+
+      <!-- TAB 3: ALL RATINGS TABLE -->
       <div id="tabContent-ratings" class="hidden space-y-3 flex-col h-full">
-        <h4 class="text-xs font-bold text-slate-300">ประวัติการให้คะแนน</h4>
+        <h4 class="text-xs font-bold text-slate-300">ประวัติการให้คะแนนแบบละเอียด (ทั้งหมด)</h4>
         <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-[#080E1A] flex-grow max-h-[60vh] lg:max-h-96 w-full">
           <table class="w-full text-left text-[10px] md:text-xs text-slate-300 min-w-[500px]">
             <thead class="bg-slate-900/80 text-brand-blue uppercase text-[9px] md:text-[10px] border-b border-slate-800 sticky top-0"><tr><th class="p-2 md:p-3">เวลา</th><th class="p-2 md:p-3">User</th><th class="p-2 md:p-3">อนิเมะ</th><th class="p-2 md:p-3 hidden sm:table-cell">แนว</th><th class="p-2 md:p-3 text-right">คะแนน</th></tr></thead>
@@ -203,11 +215,33 @@
           </table>
         </div>
       </div>
+      
+      <!-- TAB 4: EXCEL SPREADSHEET MATRIX (NEW) -->
+      <div id="tabContent-spreadsheet" class="hidden flex-col h-full space-y-4">
+        <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row gap-3 items-end">
+          <div class="w-full md:w-auto">
+             <label class="block text-[9px] md:text-[10px] text-slate-400 mb-1">ตั้งแต่วันที่</label>
+             <input type="date" id="filterStartDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-blue">
+          </div>
+          <div class="w-full md:w-auto">
+             <label class="block text-[9px] md:text-[10px] text-slate-400 mb-1">ถึงวันที่</label>
+             <input type="date" id="filterEndDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-blue">
+          </div>
+          <button onclick="generateExcelMatrix()" class="w-full md:w-auto px-4 py-1.5 bg-green-500 text-white font-bold text-xs rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2">
+             <i class="fa-solid fa-file-excel"></i> สร้างตาราง Spreadsheet
+          </button>
+        </div>
+
+        <div id="matrixContainer" class="flex-grow bg-white border border-slate-800 rounded-2xl p-4 overflow-y-auto max-h-[65vh]">
+           <div class="text-center py-10 text-slate-400 font-bold">กรุณาเลือกช่วงเวลาและกดสร้างตาราง Spreadsheet</div>
+        </div>
+      </div>
+
     </div>
   </section>
 
   <footer class="py-3 text-center text-[9px] md:text-[11px] text-slate-500 border-t border-slate-800">
-    Anime Matrix Engine • Hybrid Filtering (Collab + Content-Based)
+    Anime Recommendation System • Standard Collaborative Filtering Algorithm
   </footer>
 
   <!-- ================= LOGIC & JAVASCRIPT ================= -->
@@ -217,6 +251,7 @@
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let animeMasterList = [];
+    let allGlobalRatings = []; 
     let selectedAnime = null;
     let modalRatingVal = 5;
     let distChart = null; let topChart = null;
@@ -291,7 +326,7 @@
       document.querySelectorAll("#ratingModal .star-btn").forEach((btn, idx) => btn.className = `star-btn text-2xl md:text-3xl ${idx < val ? 'star-active' : 'star-inactive'}`);
     }
 
-    /* Submit Rating & Upsert */
+    /* Submit Rating using Update or Insert to fix duplicate issue */
     async function submitModalRating(e) {
       e.preventDefault();
       const user = document.getElementById("modalUsername").value.trim();
@@ -300,13 +335,25 @@
       btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
       try {
-        const { error } = await db.from('anime_ratings').upsert(
-          { username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal },
-          { onConflict: 'username, anime_name' }
-        );
-        if (error) throw error;
+        // เช็กหาว่า User เคยโหวตเรื่องนี้ไปแล้วหรือยัง (Case Insensitive เล็กน้อยด้วย ilike)
+        const { data: existing } = await db.from('anime_ratings').select('id').ilike('username', user).eq('anime_name', selectedAnime.title).maybeSingle();
+        
+        if(existing) {
+          // ถ้าเคยโหวตแล้ว -> Update คะแนนทับเข้าไป
+          const { error } = await db.from('anime_ratings').update({ rating: modalRatingVal, created_at: new Date().toISOString() }).eq('id', existing.id);
+          if (error) throw error;
+          Swal.fire({ icon: 'success', title: 'อัปเดตคะแนนเรียบร้อย!', text: `เปลี่ยนคะแนนเรื่อง ${selectedAnime.title} เป็น ${modalRatingVal} ดาว`, background: '#0E1A2E', color: '#ffffff', timer: 2000, showConfirmButton: false });
+        } else {
+          // ถ้ายังไม่เคยโหวต -> Insert ข้อมูลใหม่
+          const { error } = await db.from('anime_ratings').insert([{ username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal }]);
+          if (error) throw error;
+          Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', text: `โหวตเรื่อง ${selectedAnime.title} เรียบร้อย`, background: '#0E1A2E', color: '#ffffff', timer: 2000, showConfirmButton: false });
+        }
+
         closeRatingModal();
-        await processAndShowRecommendations(user);
+        if(!existing){
+           await processAndShowRecommendations(user); // คำนวณแนะนำเฉพาะตอนโหวตเรื่องใหม่ครั้งแรก
+        }
       } catch (err) {
         Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#ffffff' });
       } finally {
@@ -315,22 +362,23 @@
     }
 
     /* ------------------------------------------------------------------
-       HYBRID RECOMMENDATION ENGINE (Collaborative + Content-Based Genre/Year)
+       STANDARD COLLABORATIVE FILTERING ENGINE 
        ------------------------------------------------------------------ */
+    const cRBar = (r, u) => { const s = r.filter(x=>x.username.toLowerCase()===u.toLowerCase()).map(x=>parseFloat(x.rating)); return s.length ? s.reduce((a,b)=>a+b,0)/s.length : 0; };
     
-    function parseGenres(genreStr) {
-      if(!genreStr) return [];
-      return genreStr.split(/[,/]/).map(g => g.trim().toLowerCase());
-    }
-
-    function getGenreSimilarity(genreStr1, genreStr2) {
-      const g1 = parseGenres(genreStr1);
-      const g2 = parseGenres(genreStr2);
-      if(g1.length === 0 || g2.length === 0) return 0;
-      const intersection = g1.filter(x => g2.includes(x));
-      const union = [...new Set([...g1, ...g2])];
-      return intersection.length / union.length;
-    }
+    const cSim = (r, u1, u2) => {
+      const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2);
+      const i1 = r.filter(x=>x.username.toLowerCase()===u1.toLowerCase()), i2 = r.filter(x=>x.username.toLowerCase()===u2.toLowerCase());
+      const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
+      if(!com.length) return 0;
+      
+      let num = 0, d1 = 0, d2 = 0;
+      com.forEach(item => { 
+        const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); 
+        num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; 
+      });
+      return (d1*d2)===0 ? 0 : num/Math.sqrt(d1*d2);
+    };
 
     function submitRecInput(e) {
       e.preventDefault();
@@ -341,62 +389,57 @@
 
     async function processAndShowRecommendations(targetUser) {
       document.getElementById("recResultModal").classList.remove("hidden");
-      document.getElementById("recResultTitle").innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1"></i> คำแนะนำสำหรับ: <span class="text-white">${targetUser}</span>`;
+      document.getElementById("recResultTitle").innerHTML = `<i class="fa-solid fa-chart-pie mr-1"></i> คำแนะนำสำหรับ: <span class="text-white">${targetUser}</span>`;
       const content = document.getElementById("recResultContent");
-      content.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-circle-notch animate-spin text-brand-orange text-3xl md:text-4xl"></i><p class="mt-3 text-[10px] md:text-xs font-bold text-brand-orange animate-pulse">กำลังประมวลผล Hybrid Matrix...</p></div>`;
+      content.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-circle-notch animate-spin text-brand-orange text-3xl md:text-4xl"></i><p class="mt-3 text-[10px] md:text-xs font-bold text-brand-orange animate-pulse">คำนวณ Collaborative Matrix...</p></div>`;
 
       try {
         const { data: allRatings } = await db.from('anime_ratings').select('*');
         const userRatings = (allRatings || []).filter(r => r.username.toLowerCase() === targetUser.toLowerCase());
 
         if (userRatings.length === 0) {
-          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-circle-exclamation text-brand-orange text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีประวัติการให้คะแนน</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">กรุณาแตะเลือกโปสเตอร์เพื่อโหวตอย่างน้อย 1 เรื่องก่อน</p></div>`;
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-circle-exclamation text-brand-orange text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีประวัติการให้คะแนน</p></div>`;
           return;
         }
 
-        const seen = userRatings.map(r => r.anime_name);
-        const highRatedUserItems = userRatings.filter(r => parseFloat(r.rating) >= 3);
+        const rb = cRBar(allRatings, targetUser);
+        const otherUsers = [...new Set(allRatings.map(r=>r.username))].filter(x => x.toLowerCase() !== targetUser.toLowerCase());
+        const simList = otherUsers.map(x=>({user:x, sim: cSim(allRatings, targetUser, x)})).filter(s => s.sim > 0);
+        
+        const seen = userRatings.map(r=>r.anime_name);
         const unseenAnimes = animeMasterList.filter(a => !seen.includes(a.title));
 
-        const scoredSuggestions = unseenAnimes.map(candidate => {
-          let score = 0;
-          highRatedUserItems.forEach(ratedItem => {
-             const genreSim = getGenreSimilarity(candidate.genre, ratedItem.genre);
-             let yearBonus = 0;
-             const yearDiff = Math.abs(parseInt(candidate.release_year || 0) - parseInt(ratedItem.release_year || 0));
-             if (yearDiff <= 3) yearBonus = 0.2; 
-             else if (yearDiff <= 8) yearBonus = 0.1; 
-
-             const othersRatings = allRatings.filter(r => r.anime_name === candidate.title);
-             let collabScore = 0;
-             if(othersRatings.length > 0) {
-                const avgRating = othersRatings.reduce((sum, r) => sum + parseFloat(r.rating), 0) / othersRatings.length;
-                collabScore = (avgRating / 5) * 0.5;
-             }
-             const userRatingWeight = parseFloat(ratedItem.rating) / 5;
-             score += ((genreSim * 1.5) + yearBonus + collabScore) * userRatingWeight;
+        const predictions = unseenAnimes.map(candidate => {
+          let sumSimRating = 0; let sumSim = 0;
+          const raters = allRatings.filter(r => r.anime_name === candidate.title);
+          
+          raters.forEach(rater => {
+            const userSimObj = simList.find(s => s.user.toLowerCase() === rater.username.toLowerCase());
+            if (userSimObj) { 
+              sumSimRating += userSimObj.sim * parseFloat(rater.rating); 
+              sumSim += userSimObj.sim; 
+            }
           });
-          return { title: candidate.title, genre: candidate.genre, year: candidate.release_year, finalScore: score };
+          
+          const predictedScore = sumSim > 0 ? (sumSimRating / sumSim) : 0;
+          return { title: candidate.title, year: candidate.release_year, predictedScore: predictedScore };
         });
 
-        const topSuggestions = scoredSuggestions
-            .filter(item => item.finalScore > 0)
-            .sort((a, b) => b.finalScore - a.finalScore)
-            .slice(0, 5);
+        const topSuggestions = predictions.filter(p => p.predictedScore > 3.0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 5);
 
         if (topSuggestions.length === 0) {
-          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">ลองโหวตอนิเมะเพิ่มอีกสักนิด!</p></div>`;
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">ต้องรอคนอื่นที่มีรสนิยมคล้ายกันมาโหวตเรื่องใหม่ๆ เพิ่มเติม</p></div>`;
         } else {
           content.innerHTML = `
-            <p class="text-slate-300 text-[10px] md:text-xs mb-2 md:mb-3">วิเคราะห์จากแนวเรื่องและปีฉายจาก <b class="text-brand-blue">${userRatings.length} เรื่อง</b> ที่คุณชอบ</p>
-            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ 5 อันดับเรื่องที่เราคัดมาให้คุณ:</span>
+            <p class="text-slate-300 text-[10px] md:text-xs mb-2 md:mb-3">คำนวณจากความคล้ายคลึงของผู้ใช้อื่นในระบบ</p>
+            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ เรื่องที่เราทำนายว่าคุณจะชอบ (คะแนน > 3 ดาว):</span>
             <div class="space-y-1.5 md:space-y-2 mt-2">
               ${topSuggestions.map((s, i) => `
                 <div class="bg-[#080E1A] p-2 md:p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
                   <div class="truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
                     <span class="text-brand-blue font-bold text-[10px] md:text-xs">#${i+1}</span> <span class="text-white text-[10px] md:text-xs">${s.title}</span>
                   </div>
-                  <span class="text-[8px] md:text-[9px] text-slate-500 bg-slate-900 px-1 md:px-1.5 py-0.5 rounded border border-slate-700 shrink-0">${s.year}</span>
+                  <span class="text-[8px] md:text-[9px] text-brand-orange font-bold shrink-0 ml-1">ทำนาย: ${s.predictedScore.toFixed(2)} ★</span>
                 </div>
               `).join("")}
             </div>`;
@@ -416,7 +459,7 @@
       btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังตรวจสอบ...`;
       try {
         const { data, error } = await db.from('app_users').select('password').limit(1).single();
-        if (error || !data) throw new Error("ไม่พบตาราง admin หรือคอลัมน์ password ในฐานข้อมูล!");
+        if (error || !data) throw new Error("ไม่พบตาราง app_users หรือคอลัมน์ password ในฐานข้อมูล!");
         if (inputPass === data.password) { closeAdminLoginModal(); enterAdminDashboard(); } 
         else { Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง', background: '#0E1A2E', color: '#fff' }); }
       } catch (err) { Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#fff' }); } 
@@ -435,23 +478,21 @@
       document.getElementById("userCatalogSection").classList.remove("hidden");
     }
     function switchAdminTab(t) {
-      ['overview', 'users', 'ratings'].forEach(x => {
+      ['overview', 'users', 'ratings', 'spreadsheet'].forEach(x => {
         document.getElementById(`tabContent-${x}`).classList.add("hidden");
         document.getElementById(`tabContent-${x}`).classList.remove("flex");
-        document.getElementById(`tabBtn-${x}`).className = "w-full sm:w-1/3 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold text-slate-300 hover:bg-slate-800 transition";
+        document.getElementById(`tabBtn-${x}`).className = "w-full sm:w-1/4 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold text-slate-300 hover:bg-slate-800 transition";
       });
       document.getElementById(`tabContent-${t}`).classList.remove("hidden");
-      if(t === 'ratings') document.getElementById(`tabContent-${t}`).classList.add("flex");
-      document.getElementById(`tabBtn-${t}`).className = "w-full sm:w-1/3 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold bg-brand-blue text-black transition";
+      if(t === 'ratings' || t === 'spreadsheet') document.getElementById(`tabContent-${t}`).classList.add("flex");
+      document.getElementById(`tabBtn-${t}`).className = "w-full sm:w-1/4 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold bg-brand-blue text-black transition";
     }
 
     function formatThaiDateTime(isoString) {
       if (!isoString) return "-";
       const date = new Date(isoString);
       const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-      const day = date.getDate();
-      const month = months[date.getMonth()];
-      const year = date.getFullYear();
+      const day = date.getDate(); const month = months[date.getMonth()]; const year = date.getFullYear();
       const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
       return `${day} ${month} ${year} ${time}`;
     }
@@ -459,6 +500,8 @@
     async function loadAdminDashboardData() {
       const { data: ratings } = await db.from('anime_ratings').select('*').order('created_at', { ascending: false });
       if (!ratings) return;
+      allGlobalRatings = ratings; 
+
       const users = [...new Set(ratings.map(r => r.username))];
       const todayCount = ratings.filter(r => new Date(r.created_at) >= new Date().setHours(0,0,0,0)).length;
       document.getElementById("dashTotalUsers").innerText = users.length;
@@ -490,23 +533,13 @@
       topChart = new Chart(document.getElementById('chartTopAnime'), { type: 'doughnut', data: { labels: top.map(t=>t[0].substring(0,12)+'..'), datasets: [{ data: top.map(t=>t[1]), backgroundColor: ['#00F0FF','#FF8A00','#10B981','#F59E0B','#6366F1'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94A3B8', boxWidth: 8, font: {size: 9} } } } }});
     }
 
-    const cRBar = (r, u) => { const s = r.filter(x=>x.username===u).map(x=>parseFloat(x.rating)); return s.length ? s.reduce((a,b)=>a+b,0)/s.length : 0; };
-    const cSim = (r, u1, u2) => {
-      const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2), i1 = r.filter(x=>x.username===u1), i2 = r.filter(x=>x.username===u2);
-      const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
-      if(!com.length) return 0;
-      let num = 0, d1 = 0, d2 = 0;
-      com.forEach(item => { const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; });
-      return (d1*d2)===0 ? 0 : num/Math.sqrt(d1*d2);
-    };
-
     async function inspectUserInAdmin(tu) {
       const { data: all } = await db.from('anime_ratings').select('*');
       if(!all) return;
       
-      const ur = all.filter(r=>r.username===tu);
+      const ur = all.filter(r=>r.username.toLowerCase()===tu.toLowerCase());
       const rb = cRBar(all,tu).toFixed(2);
-      const ou = [...new Set(all.map(r=>r.username))].filter(x=>x!==tu);
+      const ou = [...new Set(all.map(r=>r.username))].filter(x=>x.toLowerCase()!==tu.toLowerCase());
       
       const simList = ou.map(x=>({user:x, sim: cSim(all,tu,x)})).sort((a,b)=>b.sim-a.sim);
       const seen = ur.map(r=>r.anime_name);
@@ -517,7 +550,7 @@
         let sumSimRating = 0; let sumSim = 0;
         const raters = all.filter(r => r.anime_name === anime);
         raters.forEach(rater => {
-          const userSimObj = simList.find(s => s.user === rater.username);
+          const userSimObj = simList.find(s => s.user.toLowerCase() === rater.username.toLowerCase());
           if (userSimObj && userSimObj.sim > 0) { sumSimRating += userSimObj.sim * parseFloat(rater.rating); sumSim += userSimObj.sim; }
         });
         const predictedRating = sumSim > 0 ? (sumSimRating / sumSim) : 0;
@@ -530,7 +563,6 @@
             <div><span class="text-xs md:text-sm font-black text-brand-blue">${tu}</span><span class="text-[8px] md:text-[10px] text-slate-400 block mt-0.5">ตอบแล้ว ${ur.length} เรื่อง</span></div>
             <span class="px-2 py-1 md:px-2.5 md:py-1 bg-slate-800 text-brand-orange rounded-lg md:rounded-xl font-bold border border-slate-700 text-[10px] md:text-xs">r̄ = ${rb} ★</span>
           </div>
-          
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
               <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ประวัติเรื่องที่ให้คะแนน:</h5>
@@ -545,7 +577,6 @@
               </div>
             </div>
           </div>
-          
           <div class="border-t border-slate-800 pt-2 md:pt-3">
             <h5 class="text-[10px] md:text-[11px] font-bold text-brand-orange mb-1">💡 ผลทำนายคะแนน Collaborative:</h5>
             <div class="space-y-1 mt-1 md:mt-2">
@@ -561,6 +592,107 @@
             </div>
           </div>
         </div>`;
+    }
+
+    /* ------------------------------------------------------------------
+       EXCEL SPREADSHEET MATRIX GENERATOR 
+       ------------------------------------------------------------------ */
+    function generateExcelMatrix() {
+      const start = document.getElementById("filterStartDate").value;
+      const end = document.getElementById("filterEndDate").value;
+      
+      let filtered = allGlobalRatings;
+      if (start) {
+        const d = new Date(start); d.setHours(0,0,0,0);
+        filtered = filtered.filter(r => new Date(r.created_at) >= d);
+      }
+      if (end) {
+        const d = new Date(end); d.setHours(23,59,59,999);
+        filtered = filtered.filter(r => new Date(r.created_at) <= d);
+      }
+
+      const container = document.getElementById("matrixContainer");
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center p-10 text-slate-500 font-bold">ไม่พบข้อมูลในช่วงเวลานี้</div>`;
+        return;
+      }
+
+      // ดึงรายชื่อ User และ Anime ทั้งหมดที่มีในช่วงเวลาที่เลือก
+      const users = [...new Set(filtered.map(r => r.username))].sort();
+      const animes = [...new Set(filtered.map(r => r.anime_name))].sort();
+
+      let rMap = {}; 
+      let rBarMap = {};
+      users.forEach(u => {
+        rMap[u] = {};
+        const ur = filtered.filter(r => r.username === u);
+        let sum = 0;
+        ur.forEach(r => { rMap[u][r.anime_name] = parseFloat(r.rating); sum += parseFloat(r.rating); });
+        rBarMap[u] = ur.length ? (sum / ur.length) : 0;
+      });
+
+      // HTML Generator 
+      let html = `<div class="text-black font-sans">`;
+      
+      // --- TABLE 1: Ratings & r_bar ---
+      html += `<h4 class="text-sm md:text-base font-bold text-black mb-2">1. เมทริกซ์คะแนนความชอบ (R) & คะแนนเฉลี่ยของแต่ละคน (r_bar)</h4>`;
+      html += `<div class="overflow-x-auto mb-8"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
+      html += `<th class="sheet-th sticky left-0 z-20">Users \\ Animes</th>`;
+      animes.forEach(a => html += `<th class="sheet-th" title="${a}">${a.length>12?a.substring(0,10)+'..':a}</th>`);
+      html += `<th class="border border-slate-400 bg-white text-black px-2 py-1 text-center font-bold">r_bar</th></tr></thead><tbody>`;
+      
+      users.forEach(u => {
+         html += `<tr><th class="sheet-th-row" title="${u}">${u}</th>`;
+         animes.forEach(a => {
+            const val = rMap[u][a];
+            if(val !== undefined) html += `<td class="sheet-td-fill">${val}</td>`;
+            else html += `<td class="sheet-td"></td>`;
+         });
+         html += `<td class="sheet-td-rbar">${rBarMap[u].toFixed(2)}</td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+
+      // --- TABLE 2: Normalized Ratings ---
+      html += `<h4 class="text-sm md:text-base font-bold text-black mb-2">2. การปรับค่าคะแนน (Normalized Rating: R - r_bar)</h4>`;
+      html += `<div class="overflow-x-auto mb-8"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
+      html += `<th class="sheet-th sticky left-0 z-20">Users \\ Animes</th>`;
+      animes.forEach(a => html += `<th class="sheet-th" title="${a}">${a.length>12?a.substring(0,10)+'..':a}</th>`);
+      html += `</tr></thead><tbody>`;
+      
+      users.forEach(u => {
+         html += `<tr><th class="sheet-th-row" title="${u}">${u}</th>`;
+         animes.forEach(a => {
+            const val = rMap[u][a];
+            if(val !== undefined) html += `<td class="sheet-td">${(val - rBarMap[u]).toFixed(2)}</td>`;
+            else html += `<td class="sheet-td"></td>`;
+         });
+         html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+
+      // --- TABLE 3: Similarity Matrix ---
+      html += `<h4 class="text-sm md:text-base font-bold text-black mb-2">3. เมทริกซ์ความคล้ายคลึง (Pearson Similarity Matrix)</h4>`;
+      html += `<div class="overflow-x-auto mb-2"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
+      html += `<th class="sheet-th sticky left-0 z-20">Sim(u, v)</th>`;
+      users.forEach(u => html += `<th class="sheet-th" title="${u}">${u}</th>`);
+      html += `</tr></thead><tbody>`;
+      
+      users.forEach(u1 => {
+         html += `<tr><th class="sheet-th-row" title="${u1}">${u1}</th>`;
+         users.forEach(u2 => {
+            if(u1 === u2) {
+               html += `<td class="sheet-td bg-slate-200 text-slate-500">1.00</td>`;
+            } else {
+               const sim = cSim(filtered, u1, u2); 
+               const cellClass = sim > 0 ? "sheet-td-sim" : "sheet-td";
+               html += `<td class="${cellClass}">${sim === 0 ? '' : sim.toFixed(2)}</td>`;
+            }
+         });
+         html += `</tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+
+      container.innerHTML = html;
     }
 
     function escapeHtml(t) { return t ? t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ''; }
