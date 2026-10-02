@@ -66,7 +66,7 @@
     <div class="mb-4 md:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl">
       <div>
         <h2 class="text-lg md:text-2xl font-black text-white flex items-center gap-2">แตะเรื่องเพื่อ <span class="text-brand-orange">โหวตคะแนน ⭐</span></h2>
-        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากระบบ Collaborative Filtering (โหวตซ้ำคืออัปเดต)</p>
+        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากระบบ Collaborative Filtering (โหวตซ้ำคืออัปเดตคะแนนเก่า)</p>
       </div>
       <div class="relative w-full md:w-72">
         <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหารายชื่อหรือแนวอนิเมะ..." class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
@@ -335,24 +335,26 @@
       btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
       try {
-        // เช็กหาว่า User เคยโหวตเรื่องนี้ไปแล้วหรือยัง (Case Insensitive เล็กน้อยด้วย ilike)
-        const { data: existing } = await db.from('anime_ratings').select('id').ilike('username', user).eq('anime_name', selectedAnime.title).maybeSingle();
+        // เปลี่ยนมาใช้ .limit(1) เพื่อหลีกเลี่ยง Error หากมีข้อมูลซ้ำซ้อนเก่าอยู่ใน DB 
+        const { data: existingList } = await db.from('anime_ratings').select('*').ilike('username', user).eq('anime_name', selectedAnime.title).limit(1);
+        const existing = existingList && existingList.length > 0 ? existingList[0] : null;
         
+        let errorObj;
         if(existing) {
-          // ถ้าเคยโหวตแล้ว -> Update คะแนนทับเข้าไป
-          const { error } = await db.from('anime_ratings').update({ rating: modalRatingVal, created_at: new Date().toISOString() }).eq('id', existing.id);
-          if (error) throw error;
-          Swal.fire({ icon: 'success', title: 'อัปเดตคะแนนเรียบร้อย!', text: `เปลี่ยนคะแนนเรื่อง ${selectedAnime.title} เป็น ${modalRatingVal} ดาว`, background: '#0E1A2E', color: '#ffffff', timer: 2000, showConfirmButton: false });
+          const { error } = await db.from('anime_ratings').update({ rating: modalRatingVal }).eq('id', existing.id);
+          errorObj = error;
+          if(!error) Swal.fire({ icon: 'success', title: 'อัปเดตคะแนนเรียบร้อย!', text: `อัปเดตเรื่อง ${selectedAnime.title} เป็น ${modalRatingVal} ดาว`, timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
         } else {
-          // ถ้ายังไม่เคยโหวต -> Insert ข้อมูลใหม่
           const { error } = await db.from('anime_ratings').insert([{ username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal }]);
-          if (error) throw error;
-          Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', text: `โหวตเรื่อง ${selectedAnime.title} เรียบร้อย`, background: '#0E1A2E', color: '#ffffff', timer: 2000, showConfirmButton: false });
+          errorObj = error;
+          if(!error) Swal.fire({ icon: 'success', title: 'บันทึกคะแนนเรียบร้อย!', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
         }
 
+        if (errorObj) throw errorObj;
+        
         closeRatingModal();
         if(!existing){
-           await processAndShowRecommendations(user); // คำนวณแนะนำเฉพาะตอนโหวตเรื่องใหม่ครั้งแรก
+           await processAndShowRecommendations(user); 
         }
       } catch (err) {
         Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#ffffff' });
@@ -370,14 +372,15 @@
       const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2);
       const i1 = r.filter(x=>x.username.toLowerCase()===u1.toLowerCase()), i2 = r.filter(x=>x.username.toLowerCase()===u2.toLowerCase());
       const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
-      if(!com.length) return 0;
+      if(!com.length) return null; // หากไม่มีเรื่องที่เหมือนกันเลยให้ return null 
       
       let num = 0, d1 = 0, d2 = 0;
       com.forEach(item => { 
         const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); 
         num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; 
       });
-      return (d1*d2)===0 ? 0 : num/Math.sqrt(d1*d2);
+      if (d1 === 0 || d2 === 0) return 0;
+      return num/Math.sqrt(d1*d2);
     };
 
     function submitRecInput(e) {
@@ -404,7 +407,7 @@
 
         const rb = cRBar(allRatings, targetUser);
         const otherUsers = [...new Set(allRatings.map(r=>r.username))].filter(x => x.toLowerCase() !== targetUser.toLowerCase());
-        const simList = otherUsers.map(x=>({user:x, sim: cSim(allRatings, targetUser, x)})).filter(s => s.sim > 0);
+        const simList = otherUsers.map(x=>({user:x, sim: cSim(allRatings, targetUser, x)})).filter(s => s.sim !== null && s.sim > 0);
         
         const seen = userRatings.map(r=>r.anime_name);
         const unseenAnimes = animeMasterList.filter(a => !seen.includes(a.title));
@@ -421,18 +424,26 @@
             }
           });
           
-          const predictedScore = sumSim > 0 ? (sumSimRating / sumSim) : 0;
+          // Fallback if no matching user found, show something based on global average
+          let predictedScore = 0;
+          if (sumSim > 0) {
+            predictedScore = sumSimRating / sumSim;
+          } else {
+            predictedScore = raters.length ? (raters.reduce((acc, r) => acc + parseFloat(r.rating), 0) / raters.length) : 0;
+          }
+          
           return { title: candidate.title, year: candidate.release_year, predictedScore: predictedScore };
         });
 
-        const topSuggestions = predictions.filter(p => p.predictedScore > 3.0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 5);
+        // Show any prediction > 0
+        const topSuggestions = predictions.filter(p => p.predictedScore > 0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 5);
 
         if (topSuggestions.length === 0) {
-          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">ต้องรอคนอื่นที่มีรสนิยมคล้ายกันมาโหวตเรื่องใหม่ๆ เพิ่มเติม</p></div>`;
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">ต้องรอคนอื่นมาโหวตเรื่องใหม่ๆ เพิ่มเติม</p></div>`;
         } else {
           content.innerHTML = `
             <p class="text-slate-300 text-[10px] md:text-xs mb-2 md:mb-3">คำนวณจากความคล้ายคลึงของผู้ใช้อื่นในระบบ</p>
-            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ เรื่องที่เราทำนายว่าคุณจะชอบ (คะแนน > 3 ดาว):</span>
+            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ เรื่องที่เราทำนายว่าคุณจะชอบ:</span>
             <div class="space-y-1.5 md:space-y-2 mt-2">
               ${topSuggestions.map((s, i) => `
                 <div class="bg-[#080E1A] p-2 md:p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
@@ -548,14 +559,28 @@
       
       const predictions = unseen.map(anime => {
         let sumSimRating = 0; let sumSim = 0;
+        let raterLog = '';
         const raters = all.filter(r => r.anime_name === anime);
+        
         raters.forEach(rater => {
           const userSimObj = simList.find(s => s.user.toLowerCase() === rater.username.toLowerCase());
-          if (userSimObj && userSimObj.sim > 0) { sumSimRating += userSimObj.sim * parseFloat(rater.rating); sumSim += userSimObj.sim; }
+          if (userSimObj && userSimObj.sim > 0) { 
+             sumSimRating += userSimObj.sim * parseFloat(rater.rating); 
+             sumSim += userSimObj.sim; 
+             raterLog += `<br><span class="pl-2 text-[9px] text-slate-500"> [${rater.username}: Sim ${userSimObj.sim.toFixed(2)} * Rate ${rater.rating}]</span>`;
+          }
         });
-        const predictedRating = sumSim > 0 ? (sumSimRating / sumSim) : 0;
-        return { anime: anime, predictedScore: predictedRating };
-      }).filter(p => p.predictedScore > 0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 3); 
+        
+        let predScore = 0;
+        if (sumSim > 0) {
+           predScore = sumSimRating / sumSim;
+        } else {
+           predScore = raters.length ? (raters.reduce((a,b)=>a+parseFloat(b.rating),0)/raters.length) : 0;
+           raterLog += `<br><span class="pl-2 text-[9px] text-slate-500"> (ใช้คะแนนเฉลี่ยรวม)</span>`;
+        }
+        
+        return { anime: anime, predScore: predScore, raterLog: raterLog, sumSim: sumSim };
+      }).filter(p => p.predScore > 0).sort((a, b) => b.predScore - a.predScore).slice(0, 3); 
 
       document.getElementById("adminUserMatrixBox").innerHTML = `
         <div class="space-y-3 md:space-y-4">
@@ -573,7 +598,7 @@
             <div>
               <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ความเหมือน Sim(target, x):</h5>
               <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
-                ${simList.length ? simList.map(s=>`<div class="flex justify-between bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">vs ${s.user}</span><span class="${s.sim>0.3?'text-green-400 font-bold':''} shrink-0 ml-1">${s.sim.toFixed(3)}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">ไม่มีคู่เทียบ</span>'}
+                ${simList.length ? simList.map(s=>`<div class="flex justify-between bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">vs ${s.user}</span><span class="${s.sim>0.3?'text-green-400 font-bold':''} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):''}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">ไม่มีคู่เทียบ</span>'}
               </div>
             </div>
           </div>
@@ -584,7 +609,7 @@
                 ? predictions.map((p, i) => `
                     <div class="bg-[#080E1A] p-1.5 md:p-2 rounded-lg border border-slate-700 flex justify-between items-center text-[9px] md:text-xs">
                       <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">#${i+1}</span>${p.anime}</span>
-                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">ทำนาย: ${p.predictedScore.toFixed(2)} ดาว</span>
+                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">ทำนาย: ${p.predScore.toFixed(2)} ดาว</span>
                     </div>
                   `).join('') 
                 : `<div class="p-2 md:p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-500 text-[9px] md:text-xs">ยังไม่มีข้อมูลเพียงพอให้คำนวณ Predicted Rating</div>`
@@ -617,7 +642,6 @@
         return;
       }
 
-      // ดึงรายชื่อ User และ Anime ทั้งหมดที่มีในช่วงเวลาที่เลือก
       const users = [...new Set(filtered.map(r => r.username))].sort();
       const animes = [...new Set(filtered.map(r => r.anime_name))].sort();
 
@@ -631,14 +655,13 @@
         rBarMap[u] = ur.length ? (sum / ur.length) : 0;
       });
 
-      // HTML Generator 
       let html = `<div class="text-black font-sans">`;
       
       // --- TABLE 1: Ratings & r_bar ---
-      html += `<h4 class="text-sm md:text-base font-bold text-black mb-2">1. เมทริกซ์คะแนนความชอบ (R) & คะแนนเฉลี่ยของแต่ละคน (r_bar)</h4>`;
+      html += `<div class="flex items-center gap-2 mb-2"><h4 class="text-sm md:text-base font-bold text-black">1. Ratings & r_bar Matrix</h4></div>`;
       html += `<div class="overflow-x-auto mb-8"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
-      html += `<th class="sheet-th sticky left-0 z-20">Users \\ Animes</th>`;
-      animes.forEach(a => html += `<th class="sheet-th" title="${a}">${a.length>12?a.substring(0,10)+'..':a}</th>`);
+      html += `<th class="sheet-th sticky left-0 z-20">movies / users</th>`;
+      animes.forEach(a => html += `<th class="sheet-th" title="${a}">${a.length>10?a.substring(0,8)+'..':a}</th>`);
       html += `<th class="border border-slate-400 bg-white text-black px-2 py-1 text-center font-bold">r_bar</th></tr></thead><tbody>`;
       
       users.forEach(u => {
@@ -652,28 +675,10 @@
       });
       html += `</tbody></table></div>`;
 
-      // --- TABLE 2: Normalized Ratings ---
-      html += `<h4 class="text-sm md:text-base font-bold text-black mb-2">2. การปรับค่าคะแนน (Normalized Rating: R - r_bar)</h4>`;
-      html += `<div class="overflow-x-auto mb-8"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
-      html += `<th class="sheet-th sticky left-0 z-20">Users \\ Animes</th>`;
-      animes.forEach(a => html += `<th class="sheet-th" title="${a}">${a.length>12?a.substring(0,10)+'..':a}</th>`);
-      html += `</tr></thead><tbody>`;
-      
-      users.forEach(u => {
-         html += `<tr><th class="sheet-th-row" title="${u}">${u}</th>`;
-         animes.forEach(a => {
-            const val = rMap[u][a];
-            if(val !== undefined) html += `<td class="sheet-td">${(val - rBarMap[u]).toFixed(2)}</td>`;
-            else html += `<td class="sheet-td"></td>`;
-         });
-         html += `</tr>`;
-      });
-      html += `</tbody></table></div>`;
-
-      // --- TABLE 3: Similarity Matrix ---
-      html += `<h4 class="text-sm md:text-base font-bold text-black mb-2">3. เมทริกซ์ความคล้ายคลึง (Pearson Similarity Matrix)</h4>`;
-      html += `<div class="overflow-x-auto mb-2"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
-      html += `<th class="sheet-th sticky left-0 z-20">Sim(u, v)</th>`;
+      // --- TABLE 2: Similarity Matrix ---
+      html += `<div class="flex items-center gap-2 mb-2"><h4 class="text-sm md:text-base font-bold text-black">2. Similarity Matrix Sim(x,y)</h4></div>`;
+      html += `<div class="overflow-x-auto mb-6"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
+      html += `<th class="sheet-th sticky left-0 z-20">movies / users</th>`;
       users.forEach(u => html += `<th class="sheet-th" title="${u}">${u}</th>`);
       html += `</tr></thead><tbody>`;
       
@@ -681,17 +686,54 @@
          html += `<tr><th class="sheet-th-row" title="${u1}">${u1}</th>`;
          users.forEach(u2 => {
             if(u1 === u2) {
-               html += `<td class="sheet-td bg-slate-200 text-slate-500">1.00</td>`;
+               html += `<td class="sheet-td-sim">1.00</td>`;
             } else {
                const sim = cSim(filtered, u1, u2); 
-               const cellClass = sim > 0 ? "sheet-td-sim" : "sheet-td";
-               html += `<td class="${cellClass}">${sim === 0 ? '' : sim.toFixed(2)}</td>`;
+               if (sim === null) {
+                 html += `<td class="sheet-td"></td>`;
+               } else {
+                 const cellClass = sim > 0 ? "sheet-td-sim" : "sheet-td";
+                 html += `<td class="${cellClass}">${sim.toFixed(2)}</td>`;
+               }
             }
          });
          html += `</tr>`;
       });
-      html += `</tbody></table></div></div>`;
-
+      html += `</tbody></table></div>`;
+      
+      // --- TABLE 3: Predicted Ratings ---
+      html += `<div class="flex items-center gap-2 mb-2"><h4 class="text-sm md:text-base font-bold text-black">3. Predicted Ratings r(u,i)</h4></div>`;
+      html += `<div class="bg-slate-100 p-4 border border-slate-300 rounded overflow-y-auto max-h-48 text-[10px] md:text-xs">`;
+      
+      let hasPredictions = false;
+      users.forEach(tu => {
+         const ur = filtered.filter(r=>r.username===tu);
+         const seen = ur.map(r=>r.anime_name);
+         const unseen = animes.filter(a => !seen.includes(a));
+         
+         unseen.forEach(anime => {
+            let sumSimRating = 0; let sumSim = 0;
+            const raters = filtered.filter(r => r.anime_name === anime);
+            raters.forEach(rater => {
+              if (rater.username !== tu) {
+                const simObj = cSim(filtered, tu, rater.username);
+                if (simObj !== null && simObj > 0) { 
+                  sumSimRating += simObj * parseFloat(rater.rating); 
+                  sumSim += simObj; 
+                }
+              }
+            });
+            if (sumSim > 0) {
+              hasPredictions = true;
+              const pred = sumSimRating / sumSim;
+              html += `<div class="mb-1 text-black font-semibold border-b border-slate-200 pb-1">r(${tu}, ${anime}) <span class="float-right text-brand-neonOrange">${pred.toFixed(2)}</span></div>`;
+            }
+         });
+      });
+      
+      if(!hasPredictions) html += `<div class="text-slate-500">ไม่มีข้อมูลเพียงพอให้ทำนายคะแนน</div>`;
+      
+      html += `</div></div>`;
       container.innerHTML = html;
     }
 
