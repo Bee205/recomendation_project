@@ -66,7 +66,7 @@
     <div class="mb-4 md:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl">
       <div>
         <h2 class="text-lg md:text-2xl font-black text-white flex items-center gap-2">แตะเรื่องเพื่อ <span class="text-brand-orange">โหวตคะแนน ⭐</span></h2>
-        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากระบบ Collaborative Filtering (โหวตซ้ำคืออัปเดตคะแนนเก่า)</p>
+        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากระบบ Collaborative Filtering (โหวตซ้ำคืออัปเดต)</p>
       </div>
       <div class="relative w-full md:w-72">
         <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหารายชื่อหรือแนวอนิเมะ..." class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
@@ -335,7 +335,6 @@
       btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
 
       try {
-        // เปลี่ยนมาใช้ .limit(1) เพื่อหลีกเลี่ยง Error หากมีข้อมูลซ้ำซ้อนเก่าอยู่ใน DB 
         const { data: existingList } = await db.from('anime_ratings').select('*').ilike('username', user).eq('anime_name', selectedAnime.title).limit(1);
         const existing = existingList && existingList.length > 0 ? existingList[0] : null;
         
@@ -364,21 +363,23 @@
     }
 
     /* ------------------------------------------------------------------
-       STANDARD COLLABORATIVE FILTERING ENGINE 
+       STANDARD COLLABORATIVE FILTERING ENGINE (PERFECT MATH BUG FIX)
        ------------------------------------------------------------------ */
     const cRBar = (r, u) => { const s = r.filter(x=>x.username.toLowerCase()===u.toLowerCase()).map(x=>parseFloat(x.rating)); return s.length ? s.reduce((a,b)=>a+b,0)/s.length : 0; };
     
+    // สูตร Cosine Similarity สำหรับหาความเหมือน (sim) ระหว่างผู้ใช้ 2 คน พร้อมป้องกัน NaN 
     const cSim = (r, u1, u2) => {
       const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2);
       const i1 = r.filter(x=>x.username.toLowerCase()===u1.toLowerCase()), i2 = r.filter(x=>x.username.toLowerCase()===u2.toLowerCase());
       const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
-      if(!com.length) return null; // หากไม่มีเรื่องที่เหมือนกันเลยให้ return null 
+      if(!com.length) return null; // ไม่มีเรื่องที่ดูร่วมกันเลย ให้ตัดทิ้ง
       
       let num = 0, d1 = 0, d2 = 0;
       com.forEach(item => { 
         const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); 
         num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; 
       });
+      // ป้องกันการหารด้วยศูนย์ (เกิดเมื่อ Variance ของคะแนนโหวตเป็น 0)
       if (d1 === 0 || d2 === 0) return 0;
       return num/Math.sqrt(d1*d2);
     };
@@ -405,45 +406,52 @@
           return;
         }
 
-        const rb = cRBar(allRatings, targetUser);
+        const rbUser = cRBar(allRatings, targetUser);
         const otherUsers = [...new Set(allRatings.map(r=>r.username))].filter(x => x.toLowerCase() !== targetUser.toLowerCase());
+        
+        // หาค่า Sim ให้ทุกคน และกรองเฉพาะคนที่ Sim หาค่าได้และมากกว่า 0
         const simList = otherUsers.map(x=>({user:x, sim: cSim(allRatings, targetUser, x)})).filter(s => s.sim !== null && s.sim > 0);
         
         const seen = userRatings.map(r=>r.anime_name);
         const unseenAnimes = animeMasterList.filter(a => !seen.includes(a.title));
 
         const predictions = unseenAnimes.map(candidate => {
-          let sumSimRating = 0; let sumSim = 0;
+          let sumSimDiff = 0; let sumSim = 0;
           const raters = allRatings.filter(r => r.anime_name === candidate.title);
           
           raters.forEach(rater => {
             const userSimObj = simList.find(s => s.user.toLowerCase() === rater.username.toLowerCase());
             if (userSimObj) { 
-              sumSimRating += userSimObj.sim * parseFloat(rater.rating); 
-              sumSim += userSimObj.sim; 
+              const rRaterBar = cRBar(allRatings, rater.username);
+              // สูตร Mean-Centered Prediction
+              sumSimDiff += userSimObj.sim * (parseFloat(rater.rating) - rRaterBar); 
+              sumSim += Math.abs(userSimObj.sim); 
             }
           });
           
-          // Fallback if no matching user found, show something based on global average
           let predictedScore = 0;
           if (sumSim > 0) {
-            predictedScore = sumSimRating / sumSim;
+            predictedScore = rbUser + (sumSimDiff / sumSim);
           } else {
+            // FALLBACK ถ้าหาคนคล้ายไม่ได้ ให้ใช้เรตติ้งเฉลี่ยรวมของเรื่องนั้นไปก่อน 
             predictedScore = raters.length ? (raters.reduce((acc, r) => acc + parseFloat(r.rating), 0) / raters.length) : 0;
           }
+          
+          // ตบให้อยู่ในสเกล 1-5 
+          predictedScore = Math.max(1, Math.min(5, predictedScore));
           
           return { title: candidate.title, year: candidate.release_year, predictedScore: predictedScore };
         });
 
-        // Show any prediction > 0
-        const topSuggestions = predictions.filter(p => p.predictedScore > 0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 5);
+        // Show any prediction > 3
+        const topSuggestions = predictions.filter(p => p.predictedScore > 3.0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 5);
 
         if (topSuggestions.length === 0) {
-          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">ต้องรอคนอื่นมาโหวตเรื่องใหม่ๆ เพิ่มเติม</p></div>`;
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">อาจต้องรอคนโหวตเพิ่ม หรือคุณโหวตอนิเมะเพิ่มอีกนิดให้ระบบมีตัวเปรียบเทียบ</p></div>`;
         } else {
           content.innerHTML = `
             <p class="text-slate-300 text-[10px] md:text-xs mb-2 md:mb-3">คำนวณจากความคล้ายคลึงของผู้ใช้อื่นในระบบ</p>
-            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ เรื่องที่เราทำนายว่าคุณจะชอบ:</span>
+            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ เรื่องที่เราทำนายว่าคุณจะชอบ (คะแนนทำนาย > 3 ดาว):</span>
             <div class="space-y-1.5 md:space-y-2 mt-2">
               ${topSuggestions.map((s, i) => `
                 <div class="bg-[#080E1A] p-2 md:p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
@@ -558,29 +566,24 @@
       const unseen = allAnimes.filter(a => !seen.includes(a));
       
       const predictions = unseen.map(anime => {
-        let sumSimRating = 0; let sumSim = 0;
-        let raterLog = '';
+        let sumSimDiff = 0; let sumSim = 0;
         const raters = all.filter(r => r.anime_name === anime);
-        
         raters.forEach(rater => {
           const userSimObj = simList.find(s => s.user.toLowerCase() === rater.username.toLowerCase());
           if (userSimObj && userSimObj.sim > 0) { 
-             sumSimRating += userSimObj.sim * parseFloat(rater.rating); 
-             sumSim += userSimObj.sim; 
-             raterLog += `<br><span class="pl-2 text-[9px] text-slate-500"> [${rater.username}: Sim ${userSimObj.sim.toFixed(2)} * Rate ${rater.rating}]</span>`;
+             const rRaterBar = cRBar(all, rater.username);
+             sumSimDiff += userSimObj.sim * (parseFloat(rater.rating) - rRaterBar); 
+             sumSim += Math.abs(userSimObj.sim); 
           }
         });
         
-        let predScore = 0;
-        if (sumSim > 0) {
-           predScore = sumSimRating / sumSim;
-        } else {
-           predScore = raters.length ? (raters.reduce((a,b)=>a+parseFloat(b.rating),0)/raters.length) : 0;
-           raterLog += `<br><span class="pl-2 text-[9px] text-slate-500"> (ใช้คะแนนเฉลี่ยรวม)</span>`;
-        }
+        let predictedScore = 0;
+        if (sumSim > 0) predictedScore = parseFloat(rb) + (sumSimDiff / sumSim);
+        else predictedScore = raters.length ? (raters.reduce((a,b)=>a+parseFloat(b.rating),0)/raters.length) : 0;
         
-        return { anime: anime, predScore: predScore, raterLog: raterLog, sumSim: sumSim };
-      }).filter(p => p.predScore > 0).sort((a, b) => b.predScore - a.predScore).slice(0, 3); 
+        predictedScore = Math.max(1, Math.min(5, predictedScore));
+        return { anime: anime, predictedScore: predictedScore };
+      }).filter(p => p.predictedScore > 0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 3); 
 
       document.getElementById("adminUserMatrixBox").innerHTML = `
         <div class="space-y-3 md:space-y-4">
@@ -609,7 +612,7 @@
                 ? predictions.map((p, i) => `
                     <div class="bg-[#080E1A] p-1.5 md:p-2 rounded-lg border border-slate-700 flex justify-between items-center text-[9px] md:text-xs">
                       <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">#${i+1}</span>${p.anime}</span>
-                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">ทำนาย: ${p.predScore.toFixed(2)} ดาว</span>
+                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">ทำนาย: ${p.predictedScore.toFixed(2)} ดาว</span>
                     </div>
                   `).join('') 
                 : `<div class="p-2 md:p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-500 text-[9px] md:text-xs">ยังไม่มีข้อมูลเพียงพอให้คำนวณ Predicted Rating</div>`
@@ -710,22 +713,25 @@
          const ur = filtered.filter(r=>r.username===tu);
          const seen = ur.map(r=>r.anime_name);
          const unseen = animes.filter(a => !seen.includes(a));
+         const rbUser = rBarMap[tu];
          
          unseen.forEach(anime => {
-            let sumSimRating = 0; let sumSim = 0;
+            let sumSimDiff = 0; let sumSim = 0;
             const raters = filtered.filter(r => r.anime_name === anime);
             raters.forEach(rater => {
               if (rater.username !== tu) {
                 const simObj = cSim(filtered, tu, rater.username);
                 if (simObj !== null && simObj > 0) { 
-                  sumSimRating += simObj * parseFloat(rater.rating); 
-                  sumSim += simObj; 
+                  const rRaterBar = rBarMap[rater.username];
+                  sumSimDiff += simObj * (parseFloat(rater.rating) - rRaterBar); 
+                  sumSim += Math.abs(simObj); 
                 }
               }
             });
             if (sumSim > 0) {
               hasPredictions = true;
-              const pred = sumSimRating / sumSim;
+              let pred = rbUser + (sumSimDiff / sumSim);
+              pred = Math.max(1, Math.min(5, pred));
               html += `<div class="mb-1 text-black font-semibold border-b border-slate-200 pb-1">r(${tu}, ${anime}) <span class="float-right text-brand-neonOrange">${pred.toFixed(2)}</span></div>`;
             }
          });
