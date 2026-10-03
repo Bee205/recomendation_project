@@ -389,7 +389,8 @@
           if (sumSim > 0) {
             predictedScore = rbUser + (sumSimDiff / sumSim);
           } else {
-            predictedScore = raters.length ? (raters.reduce((acc, r) => acc + parseFloat(r.rating), 0) / raters.length) : 0;
+            // บังคับว่าถ้าไม่มี Sim ให้คะแนนทำนายเป็น 0 ไปเลย (ระบบจะได้ไม่เอามาแนะนำ)
+            predictedScore = 0;
           }
           
           predictedScore = Math.max(1, Math.min(5, predictedScore));
@@ -527,8 +528,12 @@
         });
         
         let predictedScore = 0;
-        if (sumSim > 0) predictedScore = parseFloat(rb) + (sumSimDiff / sumSim);
-        else predictedScore = raters.length ? (raters.reduce((a,b)=>a+parseFloat(b.rating),0)/raters.length) : 0;
+        if (sumSim > 0) {
+          predictedScore = rbUser + (sumSimDiff / sumSim);
+        } else {
+          // บังคับว่าถ้าไม่มี Sim ให้คะแนนทำนายเป็น 0 ไปเลย (ระบบจะได้ไม่เอามาแนะนำ)
+          predictedScore = 0;
+        }
         
         predictedScore = Math.max(1, Math.min(5, predictedScore));
         return { anime: anime, predictedScore: predictedScore };
