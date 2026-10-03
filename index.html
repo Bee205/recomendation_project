@@ -30,6 +30,14 @@
     .star-inactive { color: #334155; }
     .poster-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
     .poster-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 25px -5px rgba(0, 240, 255, 0.25); }
+    
+    /* สไตล์สำหรับ Spreadsheet แบบ Excel */
+    .sheet-th { border: 1px solid #94A3B8; background-color: #3B82F6; color: white; font-weight: 600; padding: 4px 8px; text-align: center; white-space: nowrap; }
+    .sheet-th-row { border: 1px solid #94A3B8; background-color: #3B82F6; color: white; font-weight: 600; padding: 4px 8px; text-align: left; white-space: nowrap; position: sticky; left: 0; z-index: 10; }
+    .sheet-td { border: 1px solid #CBD5E1; background-color: white; color: black; padding: 4px 8px; text-align: center; }
+    .sheet-td-fill { border: 1px solid #94A3B8; background-color: #FDE047; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
+    .sheet-td-sim { border: 1px solid #94A3B8; background-color: #86EFAC; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
+    .sheet-td-rbar { border: 1px solid #94A3B8; background-color: white; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
   </style>
 </head>
 <body class="bg-brand-darkBlue text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand-blue selection:text-black overflow-x-hidden">
@@ -244,16 +252,16 @@
       document.getElementById("animeGrid").innerHTML = list.map((anime) => {
         const posterUrl = anime.image_url || "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80";
         return `
-          <div onclick="openRatingModal('${escapeHtml(anime.title)}')" class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-xl md:rounded-2xl overflow-hidden flex flex-col group relative">
+          <div onclick="openRatingModal('${escapeHtml(anime.title).replace(/'/g, "\\'")}')" class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-xl md:rounded-2xl overflow-hidden flex flex-col group relative">
             <div class="relative w-full pb-[140%] bg-slate-900 overflow-hidden">
-              <img src="${posterUrl}" alt="${anime.title}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
+              <img src="${posterUrl}" alt="${escapeHtml(anime.title)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
               <div class="absolute inset-0 bg-gradient-to-t from-brand-cardBlue via-transparent to-transparent opacity-90"></div>
               <span class="absolute top-1.5 right-1.5 md:top-2 md:right-2 px-1.5 py-0.5 rounded md:rounded-md bg-black/70 backdrop-blur text-[8px] md:text-[10px] font-bold text-brand-orange border border-brand-orange/30">${anime.release_year}</span>
             </div>
             <div class="p-2 md:p-3 flex-grow flex flex-col justify-between">
               <div>
-                <h4 class="text-[10px] md:text-xs font-black text-white group-hover:text-brand-blue line-clamp-2 leading-tight transition">${anime.title}</h4>
-                <p class="text-[8px] md:text-[10px] text-slate-400 line-clamp-1 mt-0.5 md:mt-1">${anime.genre}</p>
+                <h4 class="text-[10px] md:text-xs font-black text-white group-hover:text-brand-blue line-clamp-2 leading-tight transition">${escapeHtml(anime.title)}</h4>
+                <p class="text-[8px] md:text-[10px] text-slate-400 line-clamp-1 mt-0.5 md:mt-1">${escapeHtml(anime.genre)}</p>
               </div>
             </div>
           </div>`;
@@ -349,7 +357,7 @@
 
     async function processAndShowRecommendations(targetUser) {
       document.getElementById("recResultModal").classList.remove("hidden");
-      document.getElementById("recResultTitle").innerHTML = `ผลการวิเคราะห์สำหรับ: <span class="text-white">${targetUser}</span>`;
+      document.getElementById("recResultTitle").innerHTML = `ผลการวิเคราะห์สำหรับ: <span class="text-white">${escapeHtml(targetUser)}</span>`;
       const content = document.getElementById("recResultContent");
       content.innerHTML = `<div class="text-center py-6"><p class="mt-3 text-[10px] md:text-xs font-bold text-brand-orange animate-pulse">กำลังประมวลผล...</p></div>`;
 
@@ -387,7 +395,7 @@
           if (sumSim > 0) {
             predictedScore = rbUser + (sumSimDiff / sumSim);
           } else {
-            predictedScore = 0; // ลบ Fallback ที่นำค่าเฉลี่ยมาคำนวณออกตามความต้องการ
+            predictedScore = 0;
           }
           
           predictedScore = Math.max(1, Math.min(5, predictedScore));
@@ -405,7 +413,7 @@
               ${topSuggestions.map((s, i) => `
                 <div class="bg-[#080E1A] p-2 md:p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
                   <div class="truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
-                    <span class="text-brand-blue font-bold text-[10px] md:text-xs">${i+1}.</span> <span class="text-white text-[10px] md:text-xs">${s.title}</span>
+                    <span class="text-brand-blue font-bold text-[10px] md:text-xs">${i+1}.</span> <span class="text-white text-[10px] md:text-xs">${escapeHtml(s.title)}</span>
                   </div>
                   <span class="text-[8px] md:text-[9px] text-brand-orange font-bold shrink-0 ml-1">${s.predictedScore.toFixed(2)}</span>
                 </div>
@@ -477,7 +485,7 @@
       
       renderAdminCharts(ratings);
       
-      document.getElementById("adminUserBadges").innerHTML = users.map(u => `<button onclick="inspectUserInAdmin('${escapeHtml(u)}')" class="px-2 md:px-3 py-1 md:py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition">${u}</button>`).join('');
+      document.getElementById("adminUserBadges").innerHTML = users.map(u => `<button onclick="inspectUserInAdmin('${escapeHtml(u).replace(/'/g, "\\'")}')" class="px-2 md:px-3 py-1 md:py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition">${escapeHtml(u)}</button>`).join('');
       
       document.getElementById("adminRatingsTableBody").innerHTML = ratings.map(r => `
         <tr class="hover:bg-slate-800/40 border-b border-slate-800/50">
@@ -528,7 +536,7 @@
         if (sumSim > 0) {
           predictedScore = parseFloat(rb) + (sumSimDiff / sumSim);
         } else {
-          predictedScore = 0; // ลบ Fallback ที่นำค่าเฉลี่ยมาคำนวณออก
+          predictedScore = 0;
         }
         
         predictedScore = Math.max(1, Math.min(5, predictedScore));
@@ -538,20 +546,20 @@
       document.getElementById("adminUserMatrixBox").innerHTML = `
         <div class="space-y-3 md:space-y-4">
           <div class="flex justify-between items-center border-b border-slate-800 pb-2 md:pb-3">
-            <div><span class="text-xs md:text-sm font-black text-brand-blue">${tu}</span><span class="text-[8px] md:text-[10px] text-slate-400 block mt-0.5">จำนวน ${ur.length} รายการ</span></div>
+            <div><span class="text-xs md:text-sm font-black text-brand-blue">${escapeHtml(tu)}</span><span class="text-[8px] md:text-[10px] text-slate-400 block mt-0.5">จำนวน ${ur.length} รายการ</span></div>
             <span class="px-2 py-1 md:px-2.5 md:py-1 bg-slate-800 text-brand-orange rounded-lg md:rounded-xl font-bold border border-slate-700 text-[10px] md:text-xs">ค่าเฉลี่ย: ${rb}</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
               <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ประวัติ:</h5>
               <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
-                ${ur.map(r=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="truncate max-w-[120px] md:max-w-[180px] text-slate-200">${r.anime_name}</span><span class="text-brand-orange font-bold shrink-0 ml-1">${r.rating}</span></div>`).join('')}
+                ${ur.map(r=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="truncate max-w-[120px] md:max-w-[180px] text-slate-200">${escapeHtml(r.anime_name)}</span><span class="text-brand-orange font-bold shrink-0 ml-1">${r.rating}</span></div>`).join('')}
               </div>
             </div>
             <div>
               <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ความคล้ายคลึง:</h5>
               <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
-                ${simList.length ? simList.map(s=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">${s.user}</span><span class="${s.sim>0?'text-green-400 font-bold':'text-slate-500'} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):'ไม่มีเรื่องที่ดูร่วมกัน'}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">-</span>'}
+                ${simList.length ? simList.map(s=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">${escapeHtml(s.user)}</span><span class="${s.sim>0?'text-green-400 font-bold':'text-slate-500'} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):'ไม่มีเรื่องที่ดูร่วมกัน'}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">-</span>'}
               </div>
             </div>
           </div>
@@ -561,7 +569,7 @@
               ${predictions.length > 0 
                 ? predictions.map((p, i) => `
                     <div class="bg-[#080E1A] p-1.5 md:p-2 rounded-lg border border-slate-700 flex justify-between items-center text-[9px] md:text-xs">
-                      <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">${i+1}.</span>${p.anime}</span>
+                      <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">${i+1}.</span>${escapeHtml(p.anime)}</span>
                       <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">${p.predictedScore.toFixed(2)}</span>
                     </div>
                   `).join('') 
