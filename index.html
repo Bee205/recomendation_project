@@ -30,14 +30,6 @@
     .star-inactive { color: #334155; }
     .poster-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
     .poster-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 25px -5px rgba(0, 240, 255, 0.25); }
-    
-    /* สไตล์สำหรับ Spreadsheet แบบ Excel */
-    .sheet-th { border: 1px solid #94A3B8; background-color: #3B82F6; color: white; font-weight: 600; padding: 4px 8px; text-align: center; white-space: nowrap; }
-    .sheet-th-row { border: 1px solid #94A3B8; background-color: #3B82F6; color: white; font-weight: 600; padding: 4px 8px; text-align: left; white-space: nowrap; position: sticky; left: 0; z-index: 10; }
-    .sheet-td { border: 1px solid #CBD5E1; background-color: white; color: black; padding: 4px 8px; text-align: center; }
-    .sheet-td-fill { border: 1px solid #94A3B8; background-color: #FDE047; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
-    .sheet-td-sim { border: 1px solid #94A3B8; background-color: #86EFAC; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
-    .sheet-td-rbar { border: 1px solid #94A3B8; background-color: white; color: black; font-weight: bold; padding: 4px 8px; text-align: center; }
   </style>
 </head>
 <body class="bg-brand-darkBlue text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand-blue selection:text-black overflow-x-hidden">
@@ -53,10 +45,10 @@
     </div>
     <div class="flex items-center gap-2">
       <button onclick="openRecInputModal()" class="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold rounded-xl border border-brand-blue/60 text-brand-blue hover:bg-brand-blue hover:text-black transition shadow-sm active:scale-95">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hidden sm:inline ml-1">แนะนำฉัน</span>
+        <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hidden sm:inline ml-1">แนะนำอนิเมะ</span>
       </button>
       <button onclick="openAdminLoginModal()" class="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold rounded-xl bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black hover:opacity-90 transition shadow-sm active:scale-95">
-        <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline ml-1">แอดมิน</span>
+        <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline ml-1">ผู้ดูแลระบบ</span>
       </button>
     </div>
   </nav>
@@ -65,18 +57,18 @@
   <section id="userCatalogSection" class="flex-grow max-w-6xl w-full mx-auto px-4 py-4 md:py-6">
     <div class="mb-4 md:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 bg-gradient-to-r from-brand-cardBlue to-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-xl">
       <div>
-        <h2 class="text-lg md:text-2xl font-black text-white flex items-center gap-2">แตะเรื่องเพื่อ <span class="text-brand-orange">โหวตคะแนน ⭐</span></h2>
-        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ให้คะแนนเพื่อรับการวิเคราะห์จากระบบ Collaborative Filtering (โหวตซ้ำคืออัปเดต)</p>
+        <h2 class="text-lg md:text-2xl font-black text-white flex items-center gap-2">เลือกอนิเมะเพื่อ <span class="text-brand-orange">ให้คะแนน ⭐</span></h2>
+        <p class="text-[10px] md:text-xs text-slate-400 mt-1">ระบบจะวิเคราะห์และแนะนำอนิเมะโดยอ้างอิงจากการให้คะแนนของคุณ</p>
       </div>
       <div class="relative w-full md:w-72">
-        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="🔍 ค้นหารายชื่อหรือแนวอนิเมะ..." class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
+        <input type="text" id="searchInput" oninput="filterAnimeGrid()" placeholder="ค้นหารายชื่อหรือแนวอนิเมะ..." class="w-full bg-[#080E1A] border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue transition" />
       </div>
     </div>
     
     <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
       <div class="col-span-full flex flex-col items-center justify-center py-20 text-brand-blue">
         <i class="fa-solid fa-circle-notch animate-spin text-4xl mb-4"></i>
-        <p class="text-sm font-bold animate-pulse">กำลังซิงค์ข้อมูลคลังอนิเมะ...</p>
+        <p class="text-sm font-bold animate-pulse">กำลังโหลดข้อมูล...</p>
       </div>
     </div>
   </section>
@@ -95,12 +87,12 @@
       </div>
       <form onsubmit="submitModalRating(event)" class="mt-3 md:mt-4 space-y-3 md:space-y-4">
         <div>
-          <label class="block text-[10px] md:text-xs font-bold text-slate-300 mb-1.5 md:mb-2"><i class="fa-regular fa-user mr-1"></i> ชื่อโปรไฟล์ของคุณ:</label>
-          <input type="text" id="modalUsername" required placeholder="เช่น User123" class="w-full text-xs md:text-sm px-3.5 py-2 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white transition" />
+          <label class="block text-[10px] md:text-xs font-bold text-slate-300 mb-1.5 md:mb-2">ชื่อผู้ใช้งาน:</label>
+          <input type="text" id="modalUsername" required placeholder="กรอกชื่อผู้ใช้งาน" class="w-full text-xs md:text-sm px-3.5 py-2 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white transition" />
         </div>
         <div class="bg-[#080E1A]/60 p-2 md:p-3 rounded-xl md:rounded-2xl border border-slate-800 text-center">
           <div class="flex justify-between items-center mb-1 px-1">
-            <span class="text-[10px] md:text-xs font-bold text-brand-orange">ความชอบ:</span>
+            <span class="text-[10px] md:text-xs font-bold text-brand-orange">คะแนน:</span>
             <span id="modalStarLabel" class="text-[10px] md:text-xs font-black text-brand-orange">5 / 5 ดาว</span>
           </div>
           <div class="flex justify-center gap-1.5 md:gap-2.5 my-1">
@@ -112,7 +104,7 @@
           </div>
         </div>
         <button type="submit" id="modalSubmitBtn" class="w-full py-2.5 md:py-3 bg-gradient-to-r from-brand-orange to-brand-neonOrange text-black font-black text-xs md:text-sm rounded-xl transition shadow-lg active:scale-95 flex justify-center items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกคะแนน
+          บันทึกข้อมูล
         </button>
       </form>
     </div>
@@ -123,13 +115,12 @@
     <div class="bg-brand-cardBlue border border-brand-orange/40 w-full max-w-xs rounded-2xl p-6 shadow-2xl relative">
       <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition hover:rotate-90">✕</button>
       <div class="text-center mb-4">
-        <i class="fa-solid fa-shield-halved text-brand-orange text-3xl mb-2"></i>
-        <h3 class="text-base font-bold text-white">แอดมินแดชบอร์ด</h3>
+        <h3 class="text-base font-bold text-white">ระบบผู้ดูแลระบบ</h3>
       </div>
       <form onsubmit="submitAdminLogin(event)" class="space-y-4">
         <input type="password" id="adminPasswordInput" required placeholder="รหัสผ่าน..." class="w-full text-center text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-orange text-white" />
         <button type="submit" id="adminLoginBtn" class="w-full py-2.5 bg-brand-orange text-black font-bold text-sm rounded-xl hover:bg-brand-neonOrange transition active:scale-95 flex justify-center items-center gap-2">
-          <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
+          เข้าสู่ระบบ
         </button>
       </form>
     </div>
@@ -140,13 +131,12 @@
     <div class="bg-brand-cardBlue border border-brand-blue/40 w-full max-w-xs rounded-2xl p-6 shadow-2xl relative">
       <button onclick="closeRecInputModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition hover:rotate-90">✕</button>
       <div class="text-center mb-4">
-        <i class="fa-solid fa-wand-magic-sparkles text-brand-blue text-3xl mb-2"></i>
-        <h3 class="text-base font-bold text-white">รับคำแนะนำอนิเมะ</h3>
+        <h3 class="text-base font-bold text-white">วิเคราะห์คำแนะนำ</h3>
       </div>
       <form onsubmit="submitRecInput(event)" class="space-y-4">
-        <input type="text" id="recUsernameInput" required placeholder="ชื่อโปรไฟล์ของคุณ..." class="w-full text-center text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white" />
+        <input type="text" id="recUsernameInput" required placeholder="ชื่อผู้ใช้งาน..." class="w-full text-center text-sm px-3.5 py-2.5 bg-[#080E1A] border border-slate-700 rounded-xl focus:outline-none focus:border-brand-blue text-white" />
         <button type="submit" id="recInputBtn" class="w-full py-2.5 bg-brand-blue text-black font-bold text-sm rounded-xl hover:bg-[#00d0e0] transition active:scale-95 flex justify-center items-center gap-2">
-          <i class="fa-solid fa-magnifying-glass"></i> วิเคราะห์ผลลัพธ์
+          คำนวณผลลัพธ์
         </button>
       </form>
     </div>
@@ -156,7 +146,7 @@
   <div id="recResultModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeRecResultModal()">
     <div class="bg-brand-cardBlue border border-brand-blue/50 w-full max-w-md rounded-2xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
       <button onclick="closeRecResultModal()" class="absolute top-3 right-3 md:top-4 md:right-4 text-slate-400 hover:text-white bg-[#080E1A] rounded-full w-7 h-7 flex items-center justify-center text-xs transition hover:rotate-90">✕</button>
-      <h3 id="recResultTitle" class="text-sm md:text-base font-bold text-brand-blue mb-2 md:mb-3 shrink-0 pr-8"><i class="fa-solid fa-chart-pie mr-1"></i> ผลการวิเคราะห์ (Collaborative)</h3>
+      <h3 id="recResultTitle" class="text-sm md:text-base font-bold text-brand-blue mb-2 md:mb-3 shrink-0 pr-8">ผลการวิเคราะห์</h3>
       <div id="recResultContent" class="text-xs md:text-sm text-slate-300 overflow-y-auto pr-1">
         <!-- Content Injected Here -->
       </div>
@@ -168,18 +158,16 @@
     <aside class="w-full lg:w-64 bg-brand-cardBlue border border-slate-800 rounded-3xl p-4 flex flex-col justify-between shadow-xl shrink-0">
       <div class="space-y-4">
         <div class="border-b border-slate-800 pb-3">
-          <span class="text-xs font-black text-brand-orange uppercase tracking-wider">Admin Center</span>
-          <h3 class="text-base font-bold text-white">ระบบควบคุม</h3>
+          <h3 class="text-base font-bold text-white">แผงควบคุม</h3>
         </div>
         <nav class="space-y-1 flex flex-col sm:flex-row lg:flex-col gap-2 sm:gap-0">
-          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition">📈 ภาพรวมสถิติ</button>
-          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">👥 วิเคราะห์ User</button>
-          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">📋 ตารางคะแนนทั้งหมด</button>
-          <button onclick="switchAdminTab('spreadsheet')" id="tabBtn-spreadsheet" class="w-full sm:w-1/4 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition"><i class="fa-solid fa-file-excel text-green-400 mr-1"></i> Spreadsheet Matrix</button>
+          <button onclick="switchAdminTab('overview')" id="tabBtn-overview" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-brand-blue text-black transition">ภาพรวมสถิติ</button>
+          <button onclick="switchAdminTab('users')" id="tabBtn-users" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">วิเคราะห์ข้อมูล</button>
+          <button onclick="switchAdminTab('ratings')" id="tabBtn-ratings" class="w-full sm:w-1/3 lg:w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800 transition">รายการคะแนนทั้งหมด</button>
         </nav>
       </div>
       <div class="pt-4 border-t border-slate-800 mt-4 sm:mt-0">
-        <button onclick="exitAdminMode()" class="w-full py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition">🚪 ออกจากโหมด Admin</button>
+        <button onclick="exitAdminMode()" class="w-full py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition">ออกจากระบบ</button>
       </div>
     </aside>
 
@@ -188,60 +176,39 @@
       <!-- TAB 1: OVERVIEW -->
       <div id="tabContent-overview" class="space-y-4 md:space-y-5">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">ผู้ใช้งานทั้งหมด</span><span id="dashTotalUsers" class="text-xl md:text-2xl font-black text-brand-blue">0</span></div>
-          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">คะแนนทั้งหมด</span><span id="dashTotalRatings" class="text-xl md:text-2xl font-black text-brand-orange">0</span></div>
-          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">ตอบวันนี้</span><span id="dashTodayRatings" class="text-xl md:text-2xl font-black text-green-400">0</span></div>
-          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">คะแนนเฉลี่ยระบบ</span><span id="dashGlobalAvg" class="text-xl md:text-2xl font-black text-yellow-300">0.0 ★</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">จำนวนผู้ใช้งาน</span><span id="dashTotalUsers" class="text-xl md:text-2xl font-black text-brand-blue">0</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">จำนวนคะแนนทั้งหมด</span><span id="dashTotalRatings" class="text-xl md:text-2xl font-black text-brand-orange">0</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">โหวตวันนี้</span><span id="dashTodayRatings" class="text-xl md:text-2xl font-black text-green-400">0</span></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><span class="text-[9px] md:text-[11px] text-slate-400 font-semibold block">คะแนนเฉลี่ยรวม</span><span id="dashGlobalAvg" class="text-xl md:text-2xl font-black text-yellow-300">0.0</span></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">📊 การกระจายตัวของคะแนน</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartRatingDist"></canvas></div></div>
-          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">🏆 5 อันดับยอดฮิต</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartTopAnime"></canvas></div></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">การกระจายตัวของคะแนน</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartRatingDist"></canvas></div></div>
+          <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800"><h4 class="text-[10px] md:text-xs font-bold text-slate-300 mb-2 md:mb-3">อนิเมะยอดนิยม</h4><div class="h-48 md:h-56 w-full relative"><canvas id="chartTopAnime"></canvas></div></div>
         </div>
       </div>
       
       <!-- TAB 2: SIMPLE MATRIX -->
       <div id="tabContent-users" class="hidden space-y-4">
-        <div><span class="text-xs text-slate-300 font-semibold block mb-2">เลือก User เพื่อดูผลลัพธ์คร่าวๆ:</span><div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1.5 md:p-2 bg-[#080E1A] rounded-2xl border border-slate-800"><span class="text-[10px] md:text-xs text-slate-500">กำลังโหลด User...</span></div></div>
-        <div id="adminUserMatrixBox" class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800 text-[10px] md:text-xs text-slate-400">👈 กรุณาคลิกเลือกชื่อ User ด้านบน</div>
+        <div><span class="text-xs text-slate-300 font-semibold block mb-2">เลือกข้อมูลผู้ใช้เพื่อดูผลลัพธ์:</span><div id="adminUserBadges" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1.5 md:p-2 bg-[#080E1A] rounded-2xl border border-slate-800"><span class="text-[10px] md:text-xs text-slate-500">รอข้อมูล...</span></div></div>
+        <div id="adminUserMatrixBox" class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800 text-[10px] md:text-xs text-slate-400">กรุณาเลือกผู้ใช้งานจากด้านบน</div>
       </div>
 
       <!-- TAB 3: ALL RATINGS TABLE -->
       <div id="tabContent-ratings" class="hidden space-y-3 flex-col h-full">
-        <h4 class="text-xs font-bold text-slate-300">ประวัติการให้คะแนนแบบละเอียด (ทั้งหมด)</h4>
+        <h4 class="text-xs font-bold text-slate-300">รายการให้คะแนนทั้งหมด</h4>
         <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-[#080E1A] flex-grow max-h-[60vh] lg:max-h-96 w-full">
           <table class="w-full text-left text-[10px] md:text-xs text-slate-300 min-w-[500px]">
-            <thead class="bg-slate-900/80 text-brand-blue uppercase text-[9px] md:text-[10px] border-b border-slate-800 sticky top-0"><tr><th class="p-2 md:p-3">เวลา</th><th class="p-2 md:p-3">User</th><th class="p-2 md:p-3">อนิเมะ</th><th class="p-2 md:p-3 hidden sm:table-cell">แนว</th><th class="p-2 md:p-3 text-right">คะแนน</th></tr></thead>
-            <tbody id="adminRatingsTableBody" class="divide-y divide-slate-800/60"><tr><td colspan="5" class="p-4 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr></tbody>
+            <thead class="bg-slate-900/80 text-brand-blue uppercase text-[9px] md:text-[10px] border-b border-slate-800 sticky top-0"><tr><th class="p-2 md:p-3">วันที่และเวลา</th><th class="p-2 md:p-3">ผู้ใช้งาน</th><th class="p-2 md:p-3">ชื่อเรื่อง</th><th class="p-2 md:p-3 hidden sm:table-cell">แนว</th><th class="p-2 md:p-3 text-right">คะแนน</th></tr></thead>
+            <tbody id="adminRatingsTableBody" class="divide-y divide-slate-800/60"><tr><td colspan="5" class="p-4 text-center text-slate-500">กำลังประมวลผล...</td></tr></tbody>
           </table>
         </div>
       </div>
       
-      <!-- TAB 4: EXCEL SPREADSHEET MATRIX (NEW) -->
-      <div id="tabContent-spreadsheet" class="hidden flex-col h-full space-y-4">
-        <div class="bg-[#080E1A] p-3 md:p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row gap-3 items-end">
-          <div class="w-full md:w-auto">
-             <label class="block text-[9px] md:text-[10px] text-slate-400 mb-1">ตั้งแต่วันที่</label>
-             <input type="date" id="filterStartDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-blue">
-          </div>
-          <div class="w-full md:w-auto">
-             <label class="block text-[9px] md:text-[10px] text-slate-400 mb-1">ถึงวันที่</label>
-             <input type="date" id="filterEndDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-blue">
-          </div>
-          <button onclick="generateExcelMatrix()" class="w-full md:w-auto px-4 py-1.5 bg-green-500 text-white font-bold text-xs rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2">
-             <i class="fa-solid fa-file-excel"></i> สร้างตาราง Spreadsheet
-          </button>
-        </div>
-
-        <div id="matrixContainer" class="flex-grow bg-white border border-slate-800 rounded-2xl p-4 overflow-y-auto max-h-[65vh]">
-           <div class="text-center py-10 text-slate-400 font-bold">กรุณาเลือกช่วงเวลาและกดสร้างตาราง Spreadsheet</div>
-        </div>
-      </div>
-
     </div>
   </section>
 
   <footer class="py-3 text-center text-[9px] md:text-[11px] text-slate-500 border-t border-slate-800">
-    Anime Recommendation System • Standard Collaborative Filtering Algorithm
+    Anime Recommendation System
   </footer>
 
   <!-- ================= LOGIC & JAVASCRIPT ================= -->
@@ -267,11 +234,11 @@
         if (error) throw error;
         animeMasterList = data || [];
         if (animeMasterList.length === 0) { 
-          grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-slate-400"><i class="fa-solid fa-box-open text-3xl mb-3"></i><p class="text-xs md:text-sm">ไม่พบข้อมูลอนิเมะในระบบ</p></div>`; return; 
+          grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-slate-400"><p class="text-xs md:text-sm">ไม่พบข้อมูลในระบบ</p></div>`; return; 
         }
         renderGrid(animeMasterList);
       } catch (err) { 
-        grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-red-400"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><p class="text-xs md:text-sm text-center px-4">โหลดคลังอนิเมะล้มเหลว: ${err.message}</p></div>`; 
+        grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-red-400"><p class="text-xs md:text-sm text-center px-4">ข้อผิดพลาด: ${err.message}</p></div>`; 
       }
     }
 
@@ -290,9 +257,6 @@
                 <h4 class="text-[10px] md:text-xs font-black text-white group-hover:text-brand-blue line-clamp-2 leading-tight transition">${anime.title}</h4>
                 <p class="text-[8px] md:text-[10px] text-slate-400 line-clamp-1 mt-0.5 md:mt-1">${anime.genre}</p>
               </div>
-              <div class="mt-1 md:mt-2 pt-1.5 md:pt-2 border-t border-slate-800/60 flex items-center justify-between">
-                <span class="text-[8px] md:text-[10px] text-brand-orange font-bold">★ ให้คะแนน</span>
-              </div>
             </div>
           </div>`;
       }).join('');
@@ -308,7 +272,7 @@
       selectedAnime = animeMasterList.find(a => a.title === title);
       if (!selectedAnime) return;
       document.getElementById("modalAnimeTitle").innerText = selectedAnime.title;
-      document.getElementById("modalAnimeMeta").innerText = `${selectedAnime.genre} • ปี ${selectedAnime.release_year}`;
+      document.getElementById("modalAnimeMeta").innerText = `${selectedAnime.genre} • ${selectedAnime.release_year}`;
       document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[0];
       setModalRating(5);
       document.getElementById("ratingModal").classList.remove("hidden");
@@ -322,17 +286,16 @@
 
     function setModalRating(val) {
       modalRatingVal = val;
-      document.getElementById("modalStarLabel").innerText = `${val} / 5 ดาว`;
+      document.getElementById("modalStarLabel").innerText = `${val} / 5`;
       document.querySelectorAll("#ratingModal .star-btn").forEach((btn, idx) => btn.className = `star-btn text-2xl md:text-3xl ${idx < val ? 'star-active' : 'star-inactive'}`);
     }
 
-    /* Submit Rating using Update or Insert to fix duplicate issue */
     async function submitModalRating(e) {
       e.preventDefault();
       const user = document.getElementById("modalUsername").value.trim();
       if (!selectedAnime || !user) return;
       const btn = document.getElementById("modalSubmitBtn");
-      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังบันทึก...`;
+      btn.disabled = true; btn.innerHTML = `บันทึกข้อมูล...`;
 
       try {
         const { data: existingList } = await db.from('anime_ratings').select('*').ilike('username', user).eq('anime_name', selectedAnime.title).limit(1);
@@ -342,11 +305,11 @@
         if(existing) {
           const { error } = await db.from('anime_ratings').update({ rating: modalRatingVal }).eq('id', existing.id);
           errorObj = error;
-          if(!error) Swal.fire({ icon: 'success', title: 'อัปเดตคะแนนเรียบร้อย!', text: `อัปเดตเรื่อง ${selectedAnime.title} เป็น ${modalRatingVal} ดาว`, timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
+          if(!error) Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
         } else {
           const { error } = await db.from('anime_ratings').insert([{ username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal }]);
           errorObj = error;
-          if(!error) Swal.fire({ icon: 'success', title: 'บันทึกคะแนนเรียบร้อย!', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
+          if(!error) Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
         }
 
         if (errorObj) throw errorObj;
@@ -356,30 +319,25 @@
            await processAndShowRecommendations(user); 
         }
       } catch (err) {
-        Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#ffffff' });
+        Swal.fire({ icon: 'error', text: 'เกิดข้อผิดพลาด', background: '#0E1A2E', color: '#ffffff' });
       } finally {
-        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> บันทึกคะแนน`;
+        btn.disabled = false; btn.innerHTML = `บันทึกข้อมูล`;
       }
     }
 
-    /* ------------------------------------------------------------------
-       STANDARD COLLABORATIVE FILTERING ENGINE (PERFECT MATH BUG FIX)
-       ------------------------------------------------------------------ */
     const cRBar = (r, u) => { const s = r.filter(x=>x.username.toLowerCase()===u.toLowerCase()).map(x=>parseFloat(x.rating)); return s.length ? s.reduce((a,b)=>a+b,0)/s.length : 0; };
     
-    // สูตร Cosine Similarity สำหรับหาความเหมือน (sim) ระหว่างผู้ใช้ 2 คน พร้อมป้องกัน NaN 
     const cSim = (r, u1, u2) => {
       const rb1 = cRBar(r,u1), rb2 = cRBar(r,u2);
       const i1 = r.filter(x=>x.username.toLowerCase()===u1.toLowerCase()), i2 = r.filter(x=>x.username.toLowerCase()===u2.toLowerCase());
       const com = i1.filter(a => i2.some(b => b.anime_name === a.anime_name));
-      if(!com.length) return null; // ไม่มีเรื่องที่ดูร่วมกันเลย ให้ตัดทิ้ง
+      if(!com.length) return null; 
       
       let num = 0, d1 = 0, d2 = 0;
       com.forEach(item => { 
         const r1 = parseFloat(item.rating), r2 = parseFloat(i2.find(x=>x.anime_name===item.anime_name).rating); 
         num += (r1-rb1)*(r2-rb2); d1 += (r1-rb1)**2; d2 += (r2-rb2)**2; 
       });
-      // ป้องกันการหารด้วยศูนย์ (เกิดเมื่อ Variance ของคะแนนโหวตเป็น 0)
       if (d1 === 0 || d2 === 0) return 0;
       return num/Math.sqrt(d1*d2);
     };
@@ -393,23 +351,22 @@
 
     async function processAndShowRecommendations(targetUser) {
       document.getElementById("recResultModal").classList.remove("hidden");
-      document.getElementById("recResultTitle").innerHTML = `<i class="fa-solid fa-chart-pie mr-1"></i> คำแนะนำสำหรับ: <span class="text-white">${targetUser}</span>`;
+      document.getElementById("recResultTitle").innerHTML = `ผลการวิเคราะห์สำหรับ: <span class="text-white">${targetUser}</span>`;
       const content = document.getElementById("recResultContent");
-      content.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-circle-notch animate-spin text-brand-orange text-3xl md:text-4xl"></i><p class="mt-3 text-[10px] md:text-xs font-bold text-brand-orange animate-pulse">คำนวณ Collaborative Matrix...</p></div>`;
+      content.innerHTML = `<div class="text-center py-6"><p class="mt-3 text-[10px] md:text-xs font-bold text-brand-orange animate-pulse">กำลังประมวลผล...</p></div>`;
 
       try {
         const { data: allRatings } = await db.from('anime_ratings').select('*');
         const userRatings = (allRatings || []).filter(r => r.username.toLowerCase() === targetUser.toLowerCase());
 
         if (userRatings.length === 0) {
-          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-circle-exclamation text-brand-orange text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีประวัติการให้คะแนน</p></div>`;
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><p class="font-bold text-white text-xs md:text-sm">ไม่มีข้อมูลการให้คะแนน</p></div>`;
           return;
         }
 
         const rbUser = cRBar(allRatings, targetUser);
         const otherUsers = [...new Set(allRatings.map(r=>r.username))].filter(x => x.toLowerCase() !== targetUser.toLowerCase());
         
-        // หาค่า Sim ให้ทุกคน และกรองเฉพาะคนที่ Sim หาค่าได้และมากกว่า 0
         const simList = otherUsers.map(x=>({user:x, sim: cSim(allRatings, targetUser, x)})).filter(s => s.sim !== null && s.sim > 0);
         
         const seen = userRatings.map(r=>r.anime_name);
@@ -423,7 +380,6 @@
             const userSimObj = simList.find(s => s.user.toLowerCase() === rater.username.toLowerCase());
             if (userSimObj) { 
               const rRaterBar = cRBar(allRatings, rater.username);
-              // สูตร Mean-Centered Prediction
               sumSimDiff += userSimObj.sim * (parseFloat(rater.rating) - rRaterBar); 
               sumSim += Math.abs(userSimObj.sim); 
             }
@@ -433,56 +389,48 @@
           if (sumSim > 0) {
             predictedScore = rbUser + (sumSimDiff / sumSim);
           } else {
-            // FALLBACK ถ้าหาคนคล้ายไม่ได้ ให้ใช้เรตติ้งเฉลี่ยรวมของเรื่องนั้นไปก่อน 
             predictedScore = raters.length ? (raters.reduce((acc, r) => acc + parseFloat(r.rating), 0) / raters.length) : 0;
           }
           
-          // ตบให้อยู่ในสเกล 1-5 
           predictedScore = Math.max(1, Math.min(5, predictedScore));
           
           return { title: candidate.title, year: candidate.release_year, predictedScore: predictedScore };
         });
 
-        // Show any prediction > 3
         const topSuggestions = predictions.filter(p => p.predictedScore > 3.0).sort((a, b) => b.predictedScore - a.predictedScore).slice(0, 5);
 
         if (topSuggestions.length === 0) {
-          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><i class="fa-solid fa-database text-slate-500 text-2xl md:text-3xl mb-2"></i><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีเรื่องแนะนำที่เหมาะสม</p><p class="text-[10px] md:text-xs text-slate-400 mt-1">อาจต้องรอคนโหวตเพิ่ม หรือคุณโหวตอนิเมะเพิ่มอีกนิดให้ระบบมีตัวเปรียบเทียบ</p></div>`;
+          content.innerHTML = `<div class="text-center p-4 bg-[#080E1A] rounded-xl border border-slate-700"><p class="font-bold text-white text-xs md:text-sm">ยังไม่มีข้อมูลเพียงพอสำหรับการแนะนำ</p></div>`;
         } else {
           content.innerHTML = `
-            <p class="text-slate-300 text-[10px] md:text-xs mb-2 md:mb-3">คำนวณจากความคล้ายคลึงของผู้ใช้อื่นในระบบ</p>
-            <span class="font-bold text-brand-orange text-[10px] md:text-xs block mb-1">✨ เรื่องที่เราทำนายว่าคุณจะชอบ (คะแนนทำนาย > 3 ดาว):</span>
             <div class="space-y-1.5 md:space-y-2 mt-2">
               ${topSuggestions.map((s, i) => `
                 <div class="bg-[#080E1A] p-2 md:p-2.5 rounded-lg border border-slate-800 flex justify-between items-center gap-2">
                   <div class="truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
-                    <span class="text-brand-blue font-bold text-[10px] md:text-xs">#${i+1}</span> <span class="text-white text-[10px] md:text-xs">${s.title}</span>
+                    <span class="text-brand-blue font-bold text-[10px] md:text-xs">${i+1}.</span> <span class="text-white text-[10px] md:text-xs">${s.title}</span>
                   </div>
-                  <span class="text-[8px] md:text-[9px] text-brand-orange font-bold shrink-0 ml-1">ทำนาย: ${s.predictedScore.toFixed(2)} ★</span>
+                  <span class="text-[8px] md:text-[9px] text-brand-orange font-bold shrink-0 ml-1">${s.predictedScore.toFixed(2)}</span>
                 </div>
               `).join("")}
             </div>`;
         }
       } catch (err) {
-        content.innerHTML = `<p class="text-red-400 text-xs text-center">เกิดข้อผิดพลาดในการดึงข้อมูล</p>`;
+        content.innerHTML = `<p class="text-red-400 text-xs text-center">เกิดข้อผิดพลาด</p>`;
       }
     }
 
-    /* ------------------------------------------------------------------
-       ADMIN DASHBOARD
-       ------------------------------------------------------------------ */
     async function submitAdminLogin(e) {
       e.preventDefault();
       const inputPass = document.getElementById("adminPasswordInput").value;
       const btn = document.getElementById("adminLoginBtn");
-      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> กำลังตรวจสอบ...`;
+      btn.disabled = true; btn.innerHTML = `ตรวจสอบ...`;
       try {
         const { data, error } = await db.from('app_users').select('password').limit(1).single();
-        if (error || !data) throw new Error("ไม่พบตาราง app_users หรือคอลัมน์ password ในฐานข้อมูล!");
+        if (error || !data) throw new Error("เกิดข้อผิดพลาด");
         if (inputPass === data.password) { closeAdminLoginModal(); enterAdminDashboard(); } 
-        else { Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง', background: '#0E1A2E', color: '#fff' }); }
-      } catch (err) { Swal.fire({ icon: 'error', text: err.message, background: '#0E1A2E', color: '#fff' }); } 
-      finally { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ`; }
+        else { Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ถูกต้อง', background: '#0E1A2E', color: '#fff' }); }
+      } catch (err) { Swal.fire({ icon: 'error', text: 'เกิดข้อผิดพลาด', background: '#0E1A2E', color: '#fff' }); } 
+      finally { btn.disabled = false; btn.innerHTML = `เข้าสู่ระบบ`; }
     }
 
     async function enterAdminDashboard() {
@@ -497,23 +445,24 @@
       document.getElementById("userCatalogSection").classList.remove("hidden");
     }
     function switchAdminTab(t) {
-      ['overview', 'users', 'ratings', 'spreadsheet'].forEach(x => {
+      ['overview', 'users', 'ratings'].forEach(x => {
         document.getElementById(`tabContent-${x}`).classList.add("hidden");
         document.getElementById(`tabContent-${x}`).classList.remove("flex");
-        document.getElementById(`tabBtn-${x}`).className = "w-full sm:w-1/4 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold text-slate-300 hover:bg-slate-800 transition";
+        document.getElementById(`tabBtn-${x}`).className = "w-full sm:w-1/3 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold text-slate-300 hover:bg-slate-800 transition";
       });
       document.getElementById(`tabContent-${t}`).classList.remove("hidden");
-      if(t === 'ratings' || t === 'spreadsheet') document.getElementById(`tabContent-${t}`).classList.add("flex");
-      document.getElementById(`tabBtn-${t}`).className = "w-full sm:w-1/4 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold bg-brand-blue text-black transition";
+      if(t === 'ratings') document.getElementById(`tabContent-${t}`).classList.add("flex");
+      document.getElementById(`tabBtn-${t}`).className = "w-full sm:w-1/3 lg:w-full text-left px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold bg-brand-blue text-black transition";
     }
 
     function formatThaiDateTime(isoString) {
       if (!isoString) return "-";
       const date = new Date(isoString);
-      const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-      const day = date.getDate(); const month = months[date.getMonth()]; const year = date.getFullYear();
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
       const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-      return `${day} ${month} ${year} ${time}`;
+      return `${day}/${month}/${year} ${time}`;
     }
 
     async function loadAdminDashboardData() {
@@ -526,11 +475,11 @@
       document.getElementById("dashTotalUsers").innerText = users.length;
       document.getElementById("dashTotalRatings").innerText = ratings.length;
       document.getElementById("dashTodayRatings").innerText = todayCount;
-      document.getElementById("dashGlobalAvg").innerText = `${ratings.length ? (ratings.reduce((a, r) => a + parseFloat(r.rating), 0)/ratings.length).toFixed(1) : 0.0} ★`;
+      document.getElementById("dashGlobalAvg").innerText = `${ratings.length ? (ratings.reduce((a, r) => a + parseFloat(r.rating), 0)/ratings.length).toFixed(1) : 0.0}`;
       
       renderAdminCharts(ratings);
       
-      document.getElementById("adminUserBadges").innerHTML = users.map(u => `<button onclick="inspectUserInAdmin('${escapeHtml(u)}')" class="px-2 md:px-3 py-1 md:py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition">👤 ${u}</button>`).join('');
+      document.getElementById("adminUserBadges").innerHTML = users.map(u => `<button onclick="inspectUserInAdmin('${escapeHtml(u)}')" class="px-2 md:px-3 py-1 md:py-1.5 bg-slate-800 hover:bg-brand-blue hover:text-black border border-slate-700 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition">${u}</button>`).join('');
       
       document.getElementById("adminRatingsTableBody").innerHTML = ratings.map(r => `
         <tr class="hover:bg-slate-800/40 border-b border-slate-800/50">
@@ -538,14 +487,14 @@
           <td class="p-2 md:p-3 font-semibold text-brand-blue truncate max-w-[60px] md:max-w-[100px]">${escapeHtml(r.username)}</td>
           <td class="p-2 md:p-3 text-white truncate max-w-[100px] md:max-w-[150px]">${escapeHtml(r.anime_name)}</td>
           <td class="p-2 md:p-3 text-slate-400 text-[8px] md:text-[10px] truncate max-w-[60px] md:max-w-[100px] hidden sm:table-cell">${escapeHtml(r.genre)}</td>
-          <td class="p-2 md:p-3 text-right text-brand-orange font-bold text-[10px] md:text-xs">${'★'.repeat(r.rating)}</td>
+          <td class="p-2 md:p-3 text-right text-brand-orange font-bold text-[10px] md:text-xs">${r.rating}</td>
         </tr>`).join('');
     }
 
     function renderAdminCharts(ratings) {
       const dist = [0,0,0,0,0]; ratings.forEach(r => dist[Math.min(Math.max(Math.round(r.rating),1),5)-1]++);
       if(distChart) distChart.destroy();
-      distChart = new Chart(document.getElementById('chartRatingDist'), { type: 'bar', data: { labels: ['1★','2★','3★','4★','5★'], datasets: [{ data: dist, backgroundColor: ['#334155','#475569','#0284C7','#00F0FF','#FF8A00'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#1E293B' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }});
+      distChart = new Chart(document.getElementById('chartRatingDist'), { type: 'bar', data: { labels: ['1','2','3','4','5'], datasets: [{ data: dist, backgroundColor: ['#334155','#475569','#0284C7','#00F0FF','#FF8A00'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#1E293B' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }});
       const count = {}; ratings.forEach(r => count[r.anime_name] = (count[r.anime_name]||0)+1);
       const top = Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,5);
       if(topChart) topChart.destroy();
@@ -588,162 +537,42 @@
       document.getElementById("adminUserMatrixBox").innerHTML = `
         <div class="space-y-3 md:space-y-4">
           <div class="flex justify-between items-center border-b border-slate-800 pb-2 md:pb-3">
-            <div><span class="text-xs md:text-sm font-black text-brand-blue">${tu}</span><span class="text-[8px] md:text-[10px] text-slate-400 block mt-0.5">ตอบแล้ว ${ur.length} เรื่อง</span></div>
-            <span class="px-2 py-1 md:px-2.5 md:py-1 bg-slate-800 text-brand-orange rounded-lg md:rounded-xl font-bold border border-slate-700 text-[10px] md:text-xs">r̄ = ${rb} ★</span>
+            <div><span class="text-xs md:text-sm font-black text-brand-blue">${tu}</span><span class="text-[8px] md:text-[10px] text-slate-400 block mt-0.5">จำนวน ${ur.length} รายการ</span></div>
+            <span class="px-2 py-1 md:px-2.5 md:py-1 bg-slate-800 text-brand-orange rounded-lg md:rounded-xl font-bold border border-slate-700 text-[10px] md:text-xs">ค่าเฉลี่ย: ${rb}</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
-              <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ประวัติเรื่องที่ให้คะแนน:</h5>
+              <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ประวัติ:</h5>
               <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
-                ${ur.map(r=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="truncate max-w-[120px] md:max-w-[180px] text-slate-200">${r.anime_name}</span><span class="text-brand-orange font-bold shrink-0 ml-1">${'★'.repeat(r.rating)}</span></div>`).join('')}
+                ${ur.map(r=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="truncate max-w-[120px] md:max-w-[180px] text-slate-200">${r.anime_name}</span><span class="text-brand-orange font-bold shrink-0 ml-1">${r.rating}</span></div>`).join('')}
               </div>
             </div>
             <div>
-              <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ความเหมือน Sim(target, x):</h5>
+              <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ความคล้ายคลึง:</h5>
               <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
-                ${simList.length ? simList.map(s=>`<div class="flex justify-between bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">vs ${s.user}</span><span class="${s.sim>0.3?'text-green-400 font-bold':''} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):''}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">ไม่มีคู่เทียบ</span>'}
+                ${simList.length ? simList.map(s=>`<div class="flex justify-between bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">${s.user}</span><span class="${s.sim>0.3?'text-green-400 font-bold':''} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):''}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">-</span>'}
               </div>
             </div>
           </div>
           <div class="border-t border-slate-800 pt-2 md:pt-3">
-            <h5 class="text-[10px] md:text-[11px] font-bold text-brand-orange mb-1">💡 ผลทำนายคะแนน Collaborative:</h5>
+            <h5 class="text-[10px] md:text-[11px] font-bold text-brand-orange mb-1">ผลลัพธ์:</h5>
             <div class="space-y-1 mt-1 md:mt-2">
               ${predictions.length > 0 
                 ? predictions.map((p, i) => `
                     <div class="bg-[#080E1A] p-1.5 md:p-2 rounded-lg border border-slate-700 flex justify-between items-center text-[9px] md:text-xs">
-                      <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">#${i+1}</span>${p.anime}</span>
-                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">ทำนาย: ${p.predictedScore.toFixed(2)} ดาว</span>
+                      <span class="text-white truncate max-w-[140px] md:max-w-xs"><span class="text-brand-blue font-bold mr-1">${i+1}.</span>${p.anime}</span>
+                      <span class="text-[8px] md:text-[10px] text-brand-orange font-bold bg-slate-900 px-1.5 py-0.5 rounded shrink-0 ml-2 border border-slate-800">${p.predictedScore.toFixed(2)}</span>
                     </div>
                   `).join('') 
-                : `<div class="p-2 md:p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-500 text-[9px] md:text-xs">ยังไม่มีข้อมูลเพียงพอให้คำนวณ Predicted Rating</div>`
+                : `<div class="p-2 md:p-3 bg-[#070D18] rounded-xl border border-slate-800 text-slate-500 text-[9px] md:text-xs">ข้อมูลไม่เพียงพอ</div>`
               }
             </div>
           </div>
         </div>`;
     }
 
-    /* ------------------------------------------------------------------
-       EXCEL SPREADSHEET MATRIX GENERATOR 
-       ------------------------------------------------------------------ */
-    function generateExcelMatrix() {
-      const start = document.getElementById("filterStartDate").value;
-      const end = document.getElementById("filterEndDate").value;
-      
-      let filtered = allGlobalRatings;
-      if (start) {
-        const d = new Date(start); d.setHours(0,0,0,0);
-        filtered = filtered.filter(r => new Date(r.created_at) >= d);
-      }
-      if (end) {
-        const d = new Date(end); d.setHours(23,59,59,999);
-        filtered = filtered.filter(r => new Date(r.created_at) <= d);
-      }
-
-      const container = document.getElementById("matrixContainer");
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="text-center p-10 text-slate-500 font-bold">ไม่พบข้อมูลในช่วงเวลานี้</div>`;
-        return;
-      }
-
-      const users = [...new Set(filtered.map(r => r.username))].sort();
-      const animes = [...new Set(filtered.map(r => r.anime_name))].sort();
-
-      let rMap = {}; 
-      let rBarMap = {};
-      users.forEach(u => {
-        rMap[u] = {};
-        const ur = filtered.filter(r => r.username === u);
-        let sum = 0;
-        ur.forEach(r => { rMap[u][r.anime_name] = parseFloat(r.rating); sum += parseFloat(r.rating); });
-        rBarMap[u] = ur.length ? (sum / ur.length) : 0;
-      });
-
-      let html = `<div class="text-black font-sans">`;
-      
-      // --- TABLE 1: Ratings & r_bar ---
-      html += `<div class="flex items-center gap-2 mb-2"><h4 class="text-sm md:text-base font-bold text-black">1. Ratings & r_bar Matrix</h4></div>`;
-      html += `<div class="overflow-x-auto mb-8"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
-      html += `<th class="sheet-th sticky left-0 z-20">movies / users</th>`;
-      animes.forEach(a => html += `<th class="sheet-th" title="${a}">${a.length>10?a.substring(0,8)+'..':a}</th>`);
-      html += `<th class="border border-slate-400 bg-white text-black px-2 py-1 text-center font-bold">r_bar</th></tr></thead><tbody>`;
-      
-      users.forEach(u => {
-         html += `<tr><th class="sheet-th-row" title="${u}">${u}</th>`;
-         animes.forEach(a => {
-            const val = rMap[u][a];
-            if(val !== undefined) html += `<td class="sheet-td-fill">${val}</td>`;
-            else html += `<td class="sheet-td"></td>`;
-         });
-         html += `<td class="sheet-td-rbar">${rBarMap[u].toFixed(2)}</td></tr>`;
-      });
-      html += `</tbody></table></div>`;
-
-      // --- TABLE 2: Similarity Matrix ---
-      html += `<div class="flex items-center gap-2 mb-2"><h4 class="text-sm md:text-base font-bold text-black">2. Similarity Matrix Sim(x,y)</h4></div>`;
-      html += `<div class="overflow-x-auto mb-6"><table class="w-max border-collapse text-[10px] md:text-xs"><thead><tr>`;
-      html += `<th class="sheet-th sticky left-0 z-20">movies / users</th>`;
-      users.forEach(u => html += `<th class="sheet-th" title="${u}">${u}</th>`);
-      html += `</tr></thead><tbody>`;
-      
-      users.forEach(u1 => {
-         html += `<tr><th class="sheet-th-row" title="${u1}">${u1}</th>`;
-         users.forEach(u2 => {
-            if(u1 === u2) {
-               html += `<td class="sheet-td-sim">1.00</td>`;
-            } else {
-               const sim = cSim(filtered, u1, u2); 
-               if (sim === null) {
-                 html += `<td class="sheet-td"></td>`;
-               } else {
-                 const cellClass = sim > 0 ? "sheet-td-sim" : "sheet-td";
-                 html += `<td class="${cellClass}">${sim.toFixed(2)}</td>`;
-               }
-            }
-         });
-         html += `</tr>`;
-      });
-      html += `</tbody></table></div>`;
-      
-      // --- TABLE 3: Predicted Ratings ---
-      html += `<div class="flex items-center gap-2 mb-2"><h4 class="text-sm md:text-base font-bold text-black">3. Predicted Ratings r(u,i)</h4></div>`;
-      html += `<div class="bg-slate-100 p-4 border border-slate-300 rounded overflow-y-auto max-h-48 text-[10px] md:text-xs">`;
-      
-      let hasPredictions = false;
-      users.forEach(tu => {
-         const ur = filtered.filter(r=>r.username===tu);
-         const seen = ur.map(r=>r.anime_name);
-         const unseen = animes.filter(a => !seen.includes(a));
-         const rbUser = rBarMap[tu];
-         
-         unseen.forEach(anime => {
-            let sumSimDiff = 0; let sumSim = 0;
-            const raters = filtered.filter(r => r.anime_name === anime);
-            raters.forEach(rater => {
-              if (rater.username !== tu) {
-                const simObj = cSim(filtered, tu, rater.username);
-                if (simObj !== null && simObj > 0) { 
-                  const rRaterBar = rBarMap[rater.username];
-                  sumSimDiff += simObj * (parseFloat(rater.rating) - rRaterBar); 
-                  sumSim += Math.abs(simObj); 
-                }
-              }
-            });
-            if (sumSim > 0) {
-              hasPredictions = true;
-              let pred = rbUser + (sumSimDiff / sumSim);
-              pred = Math.max(1, Math.min(5, pred));
-              html += `<div class="mb-1 text-black font-semibold border-b border-slate-200 pb-1">r(${tu}, ${anime}) <span class="float-right text-brand-neonOrange">${pred.toFixed(2)}</span></div>`;
-            }
-         });
-      });
-      
-      if(!hasPredictions) html += `<div class="text-slate-500">ไม่มีข้อมูลเพียงพอให้ทำนายคะแนน</div>`;
-      
-      html += `</div></div>`;
-      container.innerHTML = html;
-    }
-
     function escapeHtml(t) { return t ? t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ''; }
   </script>
 </body>
 </html>
+อันนี้เป็นเวอร์ชั่นล่าสุดที่ใช้ได้ เอาแท็บ วิธีการคำนวน ออกไปด้วย ไม่ต้องการแล้ว แล้วก็นะ ฉันมีหน้า login page กับ signup page แล้วช่วยใส่โค้ดที่ให้ผู้ใช้ล็อคอินเข้าสุ่ระบบของ supabase โดยในนี้ฉันได้เชื่อมไว้แล้วใน script ก่อนหน้าที่หน้า index จะแสดงขึ้นมาต้องล็อคอินก่อน
