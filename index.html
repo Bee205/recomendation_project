@@ -207,7 +207,7 @@
     </div>
   </section>
 
-  <footer class="py-3 text-center text-[9px] md:text-[11px] text-slate-500 border-t border-slate-800">
+  <footer class="py-3 text-center text-[9px] md:text-[11px] text-slate-500 border-t border-slate-800 mt-auto">
     Anime Recommendation System
   </footer>
 
@@ -222,8 +222,6 @@
     let selectedAnime = null;
     let modalRatingVal = 5;
     let distChart = null; let topChart = null;
-
-    const posterPool = ["https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80"];
 
     fetchAnimeCatalog();
 
@@ -244,7 +242,7 @@
 
     function renderGrid(list) {
       document.getElementById("animeGrid").innerHTML = list.map((anime) => {
-        const posterUrl = anime.image_url || posterPool[0];
+        const posterUrl = anime.image_url || "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80";
         return `
           <div onclick="openRatingModal('${escapeHtml(anime.title)}')" class="poster-card cursor-pointer bg-brand-cardBlue border border-slate-800/80 rounded-xl md:rounded-2xl overflow-hidden flex flex-col group relative">
             <div class="relative w-full pb-[140%] bg-slate-900 overflow-hidden">
@@ -267,16 +265,16 @@
       renderGrid(animeMasterList.filter(a => a.title.toLowerCase().includes(q) || a.genre.toLowerCase().includes(q)));
     }
 
-    /* Modal Controls */
     function openRatingModal(title) {
       selectedAnime = animeMasterList.find(a => a.title === title);
       if (!selectedAnime) return;
       document.getElementById("modalAnimeTitle").innerText = selectedAnime.title;
       document.getElementById("modalAnimeMeta").innerText = `${selectedAnime.genre} • ${selectedAnime.release_year}`;
-      document.getElementById("modalPosterImg").src = selectedAnime.image_url || posterPool[0];
+      document.getElementById("modalPosterImg").src = selectedAnime.image_url || "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80";
       setModalRating(5);
       document.getElementById("ratingModal").classList.remove("hidden");
     }
+    
     function closeRatingModal() { document.getElementById("ratingModal").classList.add("hidden"); }
     function openAdminLoginModal() { document.getElementById("adminPasswordInput").value = ''; document.getElementById("adminLoginModal").classList.remove("hidden"); }
     function closeAdminLoginModal() { document.getElementById("adminLoginModal").classList.add("hidden"); }
@@ -305,16 +303,16 @@
         if(existing) {
           const { error } = await db.from('anime_ratings').update({ rating: modalRatingVal }).eq('id', existing.id);
           errorObj = error;
-          if(!error) Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
         } else {
           const { error } = await db.from('anime_ratings').insert([{ username: user, anime_name: selectedAnime.title, genre: selectedAnime.genre, release_year: selectedAnime.release_year, rating: modalRatingVal }]);
           errorObj = error;
-          if(!error) Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
         }
 
         if (errorObj) throw errorObj;
         
         closeRatingModal();
+        Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false, background: '#0E1A2E', color: '#fff' });
+        
         if(!existing){
            await processAndShowRecommendations(user); 
         }
@@ -389,8 +387,7 @@
           if (sumSim > 0) {
             predictedScore = rbUser + (sumSimDiff / sumSim);
           } else {
-            // บังคับว่าถ้าไม่มี Sim ให้คะแนนทำนายเป็น 0 ไปเลย (ระบบจะได้ไม่เอามาแนะนำ)
-            predictedScore = 0;
+            predictedScore = 0; // ลบ Fallback ที่นำค่าเฉลี่ยมาคำนวณออกตามความต้องการ
           }
           
           predictedScore = Math.max(1, Math.min(5, predictedScore));
@@ -510,7 +507,7 @@
       const rb = cRBar(all,tu).toFixed(2);
       const ou = [...new Set(all.map(r=>r.username))].filter(x=>x.toLowerCase()!==tu.toLowerCase());
       
-      const simList = ou.map(x=>({user:x, sim: cSim(all,tu,x)})).sort((a,b)=>b.sim-a.sim);
+      const simList = ou.map(x=>({user:x, sim: cSim(all,tu,x)})).sort((a,b)=>((b.sim||0)-(a.sim||0)));
       const seen = ur.map(r=>r.anime_name);
       const allAnimes = [...new Set(all.map(r=>r.anime_name))];
       const unseen = allAnimes.filter(a => !seen.includes(a));
@@ -529,10 +526,9 @@
         
         let predictedScore = 0;
         if (sumSim > 0) {
-          predictedScore = rbUser + (sumSimDiff / sumSim);
+          predictedScore = parseFloat(rb) + (sumSimDiff / sumSim);
         } else {
-          // บังคับว่าถ้าไม่มี Sim ให้คะแนนทำนายเป็น 0 ไปเลย (ระบบจะได้ไม่เอามาแนะนำ)
-          predictedScore = 0;
+          predictedScore = 0; // ลบ Fallback ที่นำค่าเฉลี่ยมาคำนวณออก
         }
         
         predictedScore = Math.max(1, Math.min(5, predictedScore));
@@ -555,7 +551,7 @@
             <div>
               <h5 class="text-[10px] md:text-[11px] font-bold text-slate-300 mb-1 md:mb-1.5">ความคล้ายคลึง:</h5>
               <div class="max-h-32 md:max-h-36 overflow-y-auto space-y-1 pr-1">
-                ${simList.length ? simList.map(s=>`<div class="flex justify-between bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">${s.user}</span><span class="${s.sim>0.3?'text-green-400 font-bold':''} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):''}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">-</span>'}
+                ${simList.length ? simList.map(s=>`<div class="flex justify-between items-center bg-[#070D18] px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg border border-slate-800 text-[9px] md:text-[11px]"><span class="text-slate-300 truncate">${s.user}</span><span class="${s.sim>0?'text-green-400 font-bold':'text-slate-500'} shrink-0 ml-1">${s.sim!==null?s.sim.toFixed(3):'ไม่มีเรื่องที่ดูร่วมกัน'}</span></div>`).join('') : '<span class="text-slate-500 text-[9px] md:text-[11px]">-</span>'}
               </div>
             </div>
           </div>
@@ -580,4 +576,3 @@
   </script>
 </body>
 </html>
-อันนี้เป็นเวอร์ชั่นล่าสุดที่ใช้ได้ เอาแท็บ วิธีการคำนวน ออกไปด้วย ไม่ต้องการแล้ว แล้วก็นะ ฉันมีหน้า login page กับ signup page แล้วช่วยใส่โค้ดที่ให้ผู้ใช้ล็อคอินเข้าสุ่ระบบของ supabase โดยในนี้ฉันได้เชื่อมไว้แล้วใน script ก่อนหน้าที่หน้า index จะแสดงขึ้นมาต้องล็อคอินก่อน
